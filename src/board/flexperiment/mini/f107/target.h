@@ -1,0 +1,9 @@
+#pragma once
+
+#define BOARD_FLEXPERIMENT_MINI
+#define SOC_STM32F1XXXC
+#define STM32_VOLTAGE 3300
+#define STM32_CLOCKSOURCE_HSE
+#define STM32_HSE_CRYSTAL
+#define STM32_HSE_FREQUENCY 8000000
+#include "soc/stm32/f1/target.h"

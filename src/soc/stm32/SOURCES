@@ -1,0 +1,26 @@
+#include "global.h"
+
+init.cpp
+pwr.cpp
+flash.cpp
+
+#ifndef SOC_STM32F1
+syscfg.cpp
+gpio.cpp
+#endif
+
+#ifdef STM32_ENABLE_SPI
+spi.cpp
+#endif
+
+#ifdef STM32_ENABLE_I2C
+i2c.cpp
+#endif
+
+#ifdef STM32_ENABLE_UART
+uart.cpp
+#endif
+
+#ifdef STM32_ENABLE_TIMER
+timer.cpp
+#endif

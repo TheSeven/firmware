@@ -1,0 +1,15 @@
+#include "global.h"
+
+rcc.cpp
+
+#ifdef STM32_ENABLE_SDIO
+sdio.cpp
+#endif
+
+#ifdef STM32_ENABLE_ETHERNET
+../f1/ethmac.cpp
+#endif
+
+#ifdef STM32_ENABLE_DMA
+../f2/dma.cpp
+#endif

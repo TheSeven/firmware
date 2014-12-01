@@ -1,0 +1,11 @@
+#pragma once
+
+#define BOARD_STM32F4DISCOVERY
+#define SOC_STM32F4
+#define SOC_STM32F4XXXG
+#define STM32_VOLTAGE 3000
+#define STM32_CLOCKSOURCE_HSE
+#define STM32_HSE_CRYSTAL
+#define STM32_HSE_FREQUENCY 8000000
+#include "soc/stm32/f4/target.h"
+

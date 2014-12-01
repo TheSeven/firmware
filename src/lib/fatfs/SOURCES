@@ -1,0 +1,9 @@
+#include "ffconf.h"
+
+ff.c
+diskio.cpp
+fatfs.cpp
+
+#if _USE_LFN != 0
+option/unicode.c
+#endif

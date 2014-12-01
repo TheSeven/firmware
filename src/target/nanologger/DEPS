@@ -1,0 +1,4 @@
+../../board/flexperiment/nano
+../../device/ds1820
+../../device/sdhc_spi
+../../lib/fatfs

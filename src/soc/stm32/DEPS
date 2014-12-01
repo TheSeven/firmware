@@ -1,0 +1,19 @@
+#include "global.h"
+
+../../interface/gpio
+
+#ifdef STM32_ENABLE_ETHERNET
+../../interface/ethernet_mii
+#endif
+
+#ifdef STM32_ENABLE_SPI
+../../interface/spi
+#endif
+
+#ifdef STM32_ENABLE_I2C
+../../interface/i2c
+#endif
+
+#ifdef STM32_ENABLE_UART
+../../interface/uart
+#endif

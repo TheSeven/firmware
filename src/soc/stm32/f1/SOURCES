@@ -1,0 +1,9 @@
+#include "global.h"
+
+rcc.cpp
+gpio.cpp
+afio.cpp
+
+#ifdef STM32_ENABLE_ETHERNET
+ethmac.cpp
+#endif
