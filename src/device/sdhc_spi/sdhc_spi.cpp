@@ -164,7 +164,7 @@ enum Storage::Result SDHC_SPI::getStatus()
 enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
-    if (page + len > pageCount || len < 0) return RESULT_INVALID_ARGUMENT;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
     enum Storage::Result rc = RESULT_COMM_ERROR;
@@ -194,7 +194,7 @@ enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
 enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
-    if (page + len > pageCount || len < 0) return RESULT_INVALID_ARGUMENT;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
     enum Storage::Result rc = RESULT_COMM_ERROR;
@@ -223,7 +223,7 @@ enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* bu
 enum Storage::Result SDHC_SPI::erase(uint32_t page, uint32_t len)
 {
     if (!initialized) return RESULT_INVALID_STATE;
-    if (page + len > pageCount || len < 0) return RESULT_INVALID_ARGUMENT;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
     enum Storage::Result rc = RESULT_COMM_ERROR;

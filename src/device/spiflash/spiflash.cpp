@@ -94,7 +94,7 @@ enum Storage::Result SPIFlash::getStatus()
 enum Storage::Result SPIFlash::read(uint32_t page, uint32_t len, void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
-    if (page + len > pageCount || len < 0) return RESULT_INVALID_ARGUMENT;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!waitIdle()) return RESULT_COMM_ERROR;
     select();
@@ -110,7 +110,7 @@ enum Storage::Result SPIFlash::read(uint32_t page, uint32_t len, void* buf)
 enum Storage::Result SPIFlash::write(uint32_t page, uint32_t len, const void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
-    if (page + len > pageCount || len < 0) return RESULT_INVALID_ARGUMENT;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     while (len)
     {
         int chunklen = MIN(pageSize - (page & (pageSize - 1)), len);
@@ -135,7 +135,7 @@ enum Storage::Result SPIFlash::write(uint32_t page, uint32_t len, const void* bu
 enum Storage::Result SPIFlash::erase(uint32_t page, uint32_t len)
 {
     if (!initialized) return RESULT_INVALID_STATE;
-    if (page + len > pageCount || len < 0) return RESULT_INVALID_ARGUMENT;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (page & (eraseSize - 1)) return RESULT_INVALID_ARGUMENT;
     if (len & (eraseSize - 1)) return RESULT_INVALID_ARGUMENT;
     while (len)
