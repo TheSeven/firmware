@@ -24,3 +24,7 @@ uart.cpp
 #ifdef STM32_ENABLE_TIMER
 timer.cpp
 #endif
+
+#ifdef STM32_ENABLE_CRC32
+crc32.cpp
+#endif
