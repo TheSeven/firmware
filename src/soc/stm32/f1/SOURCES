@@ -3,6 +3,7 @@
 rcc.cpp
 gpio.cpp
 afio.cpp
+serialnum.cpp
 
 #ifdef STM32_ENABLE_ETHERNET
 ethmac.cpp

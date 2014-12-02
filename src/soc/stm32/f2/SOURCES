@@ -1,6 +1,7 @@
 #include "global.h"
 
 rcc.cpp
+serialnum.cpp
 
 #ifdef STM32_ENABLE_SDIO
 sdio.cpp
