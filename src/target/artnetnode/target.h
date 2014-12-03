@@ -1,0 +1,4 @@
+#pragma once
+
+
+#define CORTEXM_SYSTICK_INTERVAL 100000
