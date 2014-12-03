@@ -118,6 +118,7 @@ define CCRULE_template
 build/$(TARGET)/$(TYPE)/%.$(1): src/%.$(2)
 	$(VQ)echo $(4) $$<
 	$(VQ)-mkdir -p $$(dir $$@)
+	$(VQ)rm -f $$@
 	$(VQ)$(3) -MM $(5) $$< > $$@.dep.tmp
 	$(VQ)sed -e "s|.*:|$$@:|" < $$@.dep.tmp > $$@.dep
 	$(VQ)sed -e 's/.*://' -e 's/\\$$$$//' < $$@.dep.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$$$/:/' >> $$@.dep
