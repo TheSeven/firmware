@@ -36,7 +36,8 @@ Storage::Result ConfigStore::init(Storage* storage)
                 nextFree = addr;
             }
         }
-        if (crc32(&data->size, data->size + sizeof(ConfigDataHeader) - sizeof(data->crc)) != data->crc)
+        if (data->size > blockSize || (data->size & 3)
+         || crc32(&data->size, data->size + sizeof(ConfigDataHeader) - sizeof(data->crc)) != data->crc)
         {
             result = Storage::RESULT_DATA_ERROR;
             continue;
