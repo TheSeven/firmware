@@ -28,3 +28,11 @@ timer.cpp
 #ifdef STM32_ENABLE_CRC32
 crc32.cpp
 #endif
+
+#ifdef STM32_ENABLE_DMA
+dma.cpp
+#endif
+
+#ifdef STM32_ENABLE_IWDG
+iwdg.cpp
+#endif
