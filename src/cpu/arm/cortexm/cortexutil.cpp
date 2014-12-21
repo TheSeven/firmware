@@ -1,11 +1,17 @@
 #include "global.h"
 #define NO_INLINE_VERSION
 #include "cpu/arm/cortexm/cortexutil.h"
+#include "cpu/arm/cortexm/cmsis.h"
 #include "sys/util.h"
 
 void __attribute__((optimize("-Os"))) idle()
 {
     __asm__ volatile("wfi");
+}
+
+void __attribute__((optimize("-Os"))) reset()
+{
+    NVIC_SystemReset();
 }
 
 void __attribute__((optimize("-Os"))) enter_critical_section()

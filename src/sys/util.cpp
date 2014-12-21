@@ -11,6 +11,8 @@ __attribute__((noreturn,weak)) void hang()
     while (true) idle();
 }
 
+__attribute__((noreturn,weak,alias("hang"))) void reset();
+
 __attribute__((noreturn,weak,alias("hang"))) void powerdown();
 
 extern "C" __attribute__((weak,alias("hang"))) void __cxa_pure_virtual();

@@ -10,7 +10,29 @@ void irq_enable(int irq, bool on)
     else NVIC_DisableIRQ((IRQn_Type)irq);
 }
 
+bool irq_get_pending(int irq)
+{
+    return NVIC_GetPendingIRQ((IRQn_Type)irq);
+}
+
 void irq_clear_pending(int irq)
 {
     NVIC_ClearPendingIRQ((IRQn_Type)irq);
 }
+
+void irq_set_pending(int irq)
+{
+    NVIC_SetPendingIRQ((IRQn_Type)irq);
+}
+
+void irq_set_priority(int irq, int priority)
+{
+    NVIC_SetPriority((IRQn_Type)irq, priority);
+}
+
+#ifndef CPU_ARM_CORTEX_M0
+void irq_set_priority_grouping(int bits)
+{
+    NVIC_SetPriorityGrouping(bits);
+}
+#endif

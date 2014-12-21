@@ -112,6 +112,7 @@ extern "C"
 {
 #endif
     __attribute__((noreturn)) void powerdown();
+    __attribute__((noreturn)) void reset();
     __attribute__((noreturn)) void hang();
     void idle();
     void __cxa_pure_virtual();
