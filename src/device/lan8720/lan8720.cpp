@@ -31,7 +31,7 @@ enum Ethernet::Result LAN8720::sense(Ethernet::Interface* intf, Ethernet::MII::D
     if (speed != driver->speed) intf->stateChanged = true;
     driver->speed = speed;
     mac->phyRead(phyId, 0x01, &data);
-    bool linkUp = data & 0x0004;
+    bool linkUp = !!(data & 0x0004);
     if (linkUp != intf->linkUp) intf->stateChanged = true;
     intf->linkUp = linkUp;
     return Ethernet::RESULT_OK;
