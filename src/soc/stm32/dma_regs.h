@@ -2,9 +2,9 @@
 
 struct __attribute__((packed)) STM32_DMA_REG_TYPE
 {
-    union LISR
+    union ISR
     {
-        uint32_t d32;
+        uint32_t d32[2];
         struct __attribute__((packed)) b
         {
             uint32_t FEIF0 : 1;
@@ -33,13 +33,6 @@ struct __attribute__((packed)) STM32_DMA_REG_TYPE
             uint32_t HTIF3 : 1;
             uint32_t TCIF3 : 1;
             uint32_t : 4;
-        } b;
-    } LISR;
-    union HISR
-    {
-        uint32_t d32;
-        struct __attribute__((packed)) b
-        {
             uint32_t FEIF4 : 1;
             uint32_t : 1;
             uint32_t DMEIF4 : 1;
@@ -67,10 +60,10 @@ struct __attribute__((packed)) STM32_DMA_REG_TYPE
             uint32_t TCIF7 : 1;
             uint32_t : 4;
         } b;
-    } HISR;
-    union LIFCR
+    } ISR;
+    union IFCR
     {
-        uint32_t d32;
+        uint32_t d32[2];
         struct __attribute__((packed)) b
         {
             uint32_t CFEIF0 : 1;
@@ -99,13 +92,6 @@ struct __attribute__((packed)) STM32_DMA_REG_TYPE
             uint32_t CHTIF3 : 1;
             uint32_t CTCIF3 : 1;
             uint32_t : 4;
-        } b;
-    } LIFCR;
-    union HIFCR
-    {
-        uint32_t d32;
-        struct __attribute__((packed)) b
-        {
             uint32_t CFEIF4 : 1;
             uint32_t : 1;
             uint32_t CDMEIF4 : 1;
@@ -133,7 +119,7 @@ struct __attribute__((packed)) STM32_DMA_REG_TYPE
             uint32_t CTCIF7 : 1;
             uint32_t : 4;
         } b;
-    } HIFCR;
+    } IFCR;
 };
 
 struct __attribute__((packed)) STM32_DMA_STREAM_REG_TYPE
