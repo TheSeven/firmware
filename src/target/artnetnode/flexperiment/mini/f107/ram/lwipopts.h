@@ -1,5 +1,4 @@
-#ifndef __TARGET_5110TEST_STM32F4DISCOVERY_RAM_LWIPOPTS_H__
-#define __TARGET_5110TEST_STM32F4DISCOVERY_RAM_LWIPOPTS_H__
+#pragma once
 
 #include "global.h"
 
@@ -22,6 +21,4 @@
 #define MEMP_NUM_PBUF 16
 #define PBUF_POOL_SIZE 12
 #define PBUF_POOL_BUFSIZE 256
-
-
-#endif
+#define LWIP_NETIF_HOSTNAME 1
