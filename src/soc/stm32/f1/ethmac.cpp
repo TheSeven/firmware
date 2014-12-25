@@ -5,12 +5,15 @@
 #include "interface/irq/irq.h"
 #include "interface/clockgate/clockgate.h"
 #include "interface/resetline/resetline.h"
+#include "sys/time.h"
 
 #ifdef SOC_STM32F1
 #include "soc/stm32/f1/rcc.h"
+#include "soc/stm32/f1/gpio.h"
 #include "soc/stm32/f1/afio.h"
 #else
 #include "soc/stm32/f2/rcc.h"
+#include "soc/stm32/gpio.h"
 #include "soc/stm32/syscfg.h"
 #endif
 
@@ -56,9 +59,11 @@ namespace STM32
         STM32_ETH_REGS.DMABMR.d32 = DMABMR.d32;
         while (STM32_ETH_REGS.DMABMR.b.SR);
 
+#ifndef SOC_STM32F1
         clockgate_enable(STM32_ETHMACTX_CLOCKGATE, false);
         clockgate_enable(STM32_ETHMACRX_CLOCKGATE, false);
         clockgate_enable(STM32_ETHMAC_CLOCKGATE, false);
+#endif
     }
 
     enum Ethernet::Result ETHMAC::update(Ethernet::Interface* intf, Ethernet::MII::Driver* driver)
@@ -68,7 +73,9 @@ namespace STM32
         {
             if (intf->linkUp)
             {
+#ifndef SOC_STM32F1
                 clockgate_enable(STM32_ETHMAC_CLOCKGATE, true);
+#endif
                 union STM32_ETH_REG_TYPE::MACCR MACCR = { 0 };
                 MACCR.b.ROD = true;
                 MACCR.b.IPCO = true;
@@ -77,19 +84,81 @@ namespace STM32
                 MACCR.b.FES = driver->speed == Ethernet::MII::SPEED_100;
                 MACCR.b.DM = driver->duplex == Ethernet::MII::DUPLEX_FDX;
                 STM32_ETH_REGS.MACCR.d32 = MACCR.d32;
+#ifndef SOC_STM32F1
                 clockgate_enable(STM32_ETHMACTX_CLOCKGATE, true);
                 clockgate_enable(STM32_ETHMACRX_CLOCKGATE, true);
+#endif
             }
+#ifndef SOC_STM32F1
             else
             {
                 clockgate_enable(STM32_ETHMACTX_CLOCKGATE, false);
                 clockgate_enable(STM32_ETHMACRX_CLOCKGATE, false);
                 clockgate_enable(STM32_ETHMAC_CLOCKGATE, false);
             }
+#endif
         }
         return Ethernet::RESULT_OK;
     }
 
+#ifdef STM32_BITBANG_MDIO
+    static void mdioSendBit(bool bit)
+    {
+        ::GPIO::setLevel(PIN_A2, bit);
+        udelay(1);
+        ::GPIO::setLevel(PIN_C1, true);
+        udelay(1);
+        ::GPIO::setLevel(PIN_C1, false);
+    }
+
+    static bool mdioGetBit()
+    {
+        udelay(1);
+        ::GPIO::setLevel(PIN_C1, true);
+        udelay(1);
+        ::GPIO::setLevel(PIN_C1, false);
+        return ::GPIO::getLevel(PIN_A2);
+    }
+
+    static void mdioSendBits(uint32_t data, int len)
+    {
+        while (len--) mdioSendBit((data >> len) & 1);
+    }
+
+    static uint32_t mdioGetBits(int len)
+    {
+        uint16_t data = 0;
+        while (len--) data = (data << 1) | mdioGetBit();
+        return data;
+    }
+
+    static void mdioSendHeader(int opcode, int phyid, int reg)
+    {
+        ::GPIO::configure(PIN_A2, ::GPIO::MODE_OUTPUT, true);
+        mdioSendBits(0xffffffff, 32);
+        mdioSendBits((1 << 12) | (opcode << 10) | (phyid << 5) | reg, 14);
+    }
+
+    enum Ethernet::Result ETHMAC::phyRead(int phyid, int reg, uint16_t* data)
+    {
+        mdioSendHeader(2, phyid, reg);
+        ::GPIO::configure(PIN_A2, ::GPIO::MODE_INPUT, true);
+        if (mdioGetBit())
+        {
+            mdioGetBits(32);
+            return Ethernet::RESULT_UNKNOWN_ERROR;
+        }
+        *data = mdioGetBits(16);
+        return Ethernet::RESULT_OK;
+    }
+
+    enum Ethernet::Result ETHMAC::phyWrite(int phyid, int reg, uint16_t data)
+    {
+        mdioSendHeader(1, phyid, reg);
+        mdioSendBits((2 << 16) | data, 18);
+        return Ethernet::RESULT_OK;
+    }
+#else
     enum Ethernet::Result ETHMAC::phyRead(int phyid, int reg, uint16_t* data)
     {
         bool old = clockgate_enable(STM32_ETHMAC_CLOCKGATE, true);
@@ -116,6 +185,7 @@ namespace STM32
         clockgate_enable(STM32_ETHMAC_CLOCKGATE, old);
         return Ethernet::RESULT_OK;
     }
+#endif
 
     err_t ETHMAC::lwipInit(Ethernet::Interface* intf, Ethernet::MII::Driver* driver)
     {
@@ -145,7 +215,9 @@ namespace STM32
         curTX = &txDesc[0];
         curRX = &rxDesc[0];
 
+#ifndef SOC_STM32F1
         clockgate_enable(STM32_ETHMAC_CLOCKGATE, true);
+#endif
 
         union STM32_ETH_REG_TYPE::MACCR MACCR = { 0 };
         MACCR.b.FES = true;
@@ -185,8 +257,10 @@ namespace STM32
         STM32_ETH_REGS.DMATDLAR = (uint32_t)txDesc;
         STM32_ETH_REGS.DMARDLAR = (uint32_t)rxDesc;
 
+#ifndef SOC_STM32F1
         clockgate_enable(STM32_ETHMACTX_CLOCKGATE, true);
         clockgate_enable(STM32_ETHMACRX_CLOCKGATE, true);
+#endif
 
         STM32_ETH_REGS.DMAOMR.b.FTF = true;
         while (STM32_ETH_REGS.DMAOMR.b.FTF);
@@ -206,9 +280,11 @@ namespace STM32
         DMAIER.b.RIE = true;
         STM32_ETH_REGS.DMAIER.d32 = DMAIER.d32;
 
+#ifndef SOC_STM32F1
         clockgate_enable(STM32_ETHMACTX_CLOCKGATE, false);
         clockgate_enable(STM32_ETHMACRX_CLOCKGATE, false);
         clockgate_enable(STM32_ETHMAC_CLOCKGATE, false);
+#endif
 
         irq_clear_pending(eth_IRQn);
         irq_enable(eth_IRQn, true);
