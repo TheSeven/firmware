@@ -39,8 +39,9 @@ static void gpio_set_bits(int pin, uint32_t mask, uint32_t value)
 bool STM32::GPIO_F1::PinController::getLevel(unsigned int pin) const
 {
     bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), true);
-    return !!(STM32_GPIO_REGS(pin >> 4).IDR.d32 >> (pin & 0xf));
+    bool result = ((STM32_GPIO_REGS(pin >> 4).IDR.d32 >> (pin & 0xf))) & 1;
     clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), old);
+    return result;
 }
 
 void STM32::GPIO_F1::PinController::setLevel(unsigned int pin, bool level) const

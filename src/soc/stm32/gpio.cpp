@@ -48,8 +48,9 @@ namespace STM32
     bool __attribute__((optimize("-Os"))) GPIO::PinController::getLevel(unsigned int pin) const
     {
         bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), true);
-        return (STM32_GPIO_REGS(pin >> 4).IDR.d32 >> (pin & 0xf)) & 1;
+        bool result = (STM32_GPIO_REGS(pin >> 4).IDR.d32 >> (pin & 0xf)) & 1;
         clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), old);
+        return result;
     }
     
     void __attribute__((optimize("-Os"))) GPIO::PinController::setLevel(unsigned int pin, bool level) const
