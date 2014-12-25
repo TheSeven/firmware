@@ -12,5 +12,5 @@ sdio.cpp
 #endif
 
 #ifdef STM32_ENABLE_DMA
-../f2/dma.cpp
+../dma.cpp
 #endif

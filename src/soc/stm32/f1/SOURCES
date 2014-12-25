@@ -8,3 +8,7 @@ serialnum.cpp
 #ifdef STM32_ENABLE_ETHERNET
 ethmac.cpp
 #endif
+
+#ifdef STM32_ENABLE_DMA
+dma.cpp
+#endif

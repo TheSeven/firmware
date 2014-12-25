@@ -29,10 +29,6 @@ timer.cpp
 crc32.cpp
 #endif
 
-#ifdef STM32_ENABLE_DMA
-dma.cpp
-#endif
-
 #ifdef STM32_ENABLE_IWDG
 iwdg.cpp
 #endif
