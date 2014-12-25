@@ -53,7 +53,7 @@ ifeq ($(TARGET),)
 all: $(TARGETS)
 active:
 	$(VQ)-mkdir -p build/ACTIVE
-	$(Q)+$(MAKE) $(ACTIVE) COPYTO=build/ACTIVE/firmware
+	$(Q)+$(MAKE) $(ACTIVE) COPYTO=build/ACTIVE/firmware COPYCTL=src/target/ACTIVE
 define TARGET_template
 $(1):
 	$(Q)+$(MAKE) TARGET=$(1)
@@ -128,14 +128,14 @@ endef
 
 -include $(OBJ:%=%.dep)
 
-build/$(TARGET)/$(TYPE)/%.bin: build/$(TARGET)/$(TYPE)/%.elf
+build/$(TARGET)/$(TYPE)/%.bin: build/$(TARGET)/$(TYPE)/%.elf $(COPYCTL)
 	$(VQ)echo "[OC]    " $<
-	$(Q)$(OBJCOPY) -O binary $^ $@
+	$(Q)$(OBJCOPY) -O binary $< $@
 ifneq ($(COPYTO),)
 	$(VQ)cp $@ $(COPYTO).bin
 endif
 
-build/$(TARGET)/$(TYPE)/$(NAME).elf: $(_LDSCRIPT) $(OBJ) $(SOURCES) $(DEPS)
+build/$(TARGET)/$(TYPE)/$(NAME).elf: $(_LDSCRIPT) $(OBJ) $(SOURCES) $(DEPS) $(COPYCTL)
 	$(VQ)echo "[LD]    " $@
 	$(Q)$(LD) -Map "$@.map" $(_LDFLAGS) -o $@ -T $(_LDSCRIPT) $(OBJ)
 ifneq ($(COPYTO),)
