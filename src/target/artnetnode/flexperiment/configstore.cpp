@@ -1,11 +1,16 @@
 #include "global.h"
 #include "target/artnetnode/configstore.h"
 #include "sys/util.h"
-#include "soc/stm32/gpio.h"
 #include "soc/stm32/spi.h"
 #include "device/spiflash/spiflash.h"
 #include "lib/configstore/configstore.h"
 #include "lib/flashpartition/flashpartition.h"
+
+#if defined(SOC_STM32F1)
+#include "soc/stm32/f1/gpio.h"
+#else
+#include "soc/stm32/gpio.h"
+#endif
 
 
 #define PARTITION_ID 0x664374654e747241ull

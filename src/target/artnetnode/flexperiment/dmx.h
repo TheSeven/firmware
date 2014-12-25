@@ -2,11 +2,16 @@
 
 #include "global.h"
 #include "target/artnetnode/dmx.h"
-#include "soc/stm32/gpio.h"
 #include "soc/stm32/uart.h"
 #include "soc/stm32/uart_regs.h"
-#include "soc/stm32/dma_regs.h"
 
+#if defined(SOC_STM32F1)
+#include "soc/stm32/f1/gpio.h"
+#include "soc/stm32/f1/dma_regs.h"
+#else
+#include "soc/stm32/gpio.h"
+#include "soc/stm32/dma_regs.h"
+#endif
 
 enum ChannelMode
 {

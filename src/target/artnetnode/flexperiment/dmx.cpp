@@ -2,7 +2,6 @@
 #include "target/artnetnode/flexperiment/dmx.h"
 #include "target/artnetnode/main.h"
 #include "soc/stm32/uart_regs.h"
-#include "soc/stm32/dma_regs.h"
 #include "cpu/arm/cortexm/irq.h"
 #include "interface/irq/irq.h"
 #include "interface/clockgate/clockgate.h"
@@ -20,11 +19,11 @@
 DMXDMAChannel dmxChannelInstance[DMX_IN_CHANNELS] =
 {
 #if defined(SOC_STM32F1)
-    DMXDMAChannel(0, 0, PIN_A9, PIN_B2, true, false, DMAStream(0, 4, 0), DMAStream(0, 3, 0)),
-    DMXDMAChannel(1, 1, PIN_C6, PIN_C13, true, false, DMAStream(0, 5, 0), DMAStream(0, 6, 0)),
+    DMXDMAChannel(0, 0, PIN_A9, PIN_B2, false, DMAStream(0, 4, 0), DMAStream(0, 3, 0)),
+    DMXDMAChannel(1, 1, PIN_C6, PIN_C13, false, DMAStream(0, 5, 0), DMAStream(0, 6, 0)),
     DMXDMAChannel(2, 2, PIN_B10, PIN_B1, true, DMAStream(0, 2, 0), DMAStream(0, 1, 0)),
-    DMXDMAChannel(3, 3, PIN_C10, PIN_B0, true, DMAStream(1, 8, 0), DMAStream(1, 4, 0)),
-    DMXPIOChannel(4, 4, PIN_C12, PIN_C11, true),
+    DMXDMAChannel(3, 3, PIN_C10, PIN_B0, true, DMAStream(1, 2, 0), DMAStream(1, 4, 0)),
+//TODO    DMXPIOChannel(4, 4, PIN_C12, PIN_C11, true),
 #elif defined(SOC_STM32F2) || defined(SOC_STM32F4)
     DMXDMAChannel(0, 0, PIN_A9, PIN_B2, false, DMAStream(1, 2, 4), DMAStream(1, 7, 4)),
     DMXDMAChannel(1, 1, PIN_C6, PIN_C13, false, DMAStream(0, 5, 4), DMAStream(0, 6, 4)),
@@ -42,8 +41,8 @@ DMXBidiChannel* dmxChannel[DMX_IN_CHANNELS] =
     dmxChannelInstance + 1,
     dmxChannelInstance + 2,
     dmxChannelInstance + 3,
-    dmxChannelInstance + 4,
 #if defined(SOC_STM32F2) || defined(SOC_STM32F4)
+    dmxChannelInstance + 4,
     dmxChannelInstance + 5,
 #endif
 };
@@ -54,8 +53,8 @@ DMXInChannel* dmxInChannel[DMX_IN_CHANNELS] =
     dmxChannelInstance + 1,
     dmxChannelInstance + 2,
     dmxChannelInstance + 3,
-    dmxChannelInstance + 4,
 #if defined(SOC_STM32F2) || defined(SOC_STM32F4)
+    dmxChannelInstance + 4,
     dmxChannelInstance + 5,
 #endif
 };
@@ -65,8 +64,8 @@ DMXOutChannel* dmxOutChannel[DMX_OUT_CHANNELS] =
     dmxChannelInstance + 0,
     dmxChannelInstance + 2,
     dmxChannelInstance + 3,
-    dmxChannelInstance + 4,
 #if defined(SOC_STM32F2) || defined(SOC_STM32F4)
+    dmxChannelInstance + 4,
     dmxChannelInstance + 5,
 #endif
 };
@@ -135,9 +134,11 @@ uint8_t const dma_irqs[] =
     dma2_stream3_IRQn,
     dma2_stream4_IRQn,
     dma2_stream5_IRQn,
+#if defined(SOC_STM32F2) || defined(SOC_STM32F4)
     dma2_stream6_IRQn,
     dma2_stream7_IRQn,
     dma2_stream8_IRQn,
+#endif
 };
 
 uint8_t const dma_clocks[] =
@@ -186,30 +187,36 @@ DMXDMAChannel::DMXDMAChannel(int index, int uart, GPIO::Pin txPin, GPIO::Pin oeP
     clockgate_enable(dma_clocks[dmaIn.controller], true);
     clockgate_enable(dma_clocks[dmaOut.controller], true);
     union STM32_DMA_STREAM_REG_TYPE::CR CR = { 0 };
+#ifndef SOC_STM32F1
     CR.b.CHSEL = dmaIn.channel;
     CR.b.PL = 3;
+#endif
     CR.b.MSIZE = 2;
     CR.b.MINC = true;
     CR.b.TCIE = true;
     dmaRegsIn->CR.d32 = CR.d32;
+#ifndef SOC_STM32F1
     CR.b.CHSEL = dmaOut.channel;
     CR.b.PL = 0;
+#endif
     CR.b.MSIZE = 0;
     CR.b.DIR = 1;
     dmaRegsOut->CR.d32 = CR.d32;
     dmaRegsIn->PAR = (uint32_t)&uartRegs->DR;
     dmaRegsOut->PAR = (uint32_t)&uartRegs->DR;
+#ifndef SOC_STM32F1
     union STM32_DMA_STREAM_REG_TYPE::FCR FCR = { 0 };
     FCR.b.DMDIS = true;
     dmaRegsIn->FCR.d32 = FCR.d32;
     FCR.b.FTH = 2;
     dmaRegsOut->FCR.d32 = FCR.d32;
+#endif
     irq_set_priority(uart_irqs[uart], 2);
     irq_set_priority(dmaInIRQ, 10);
     irq_set_priority(dmaOutIRQ, 12);
     lastSentTime = read_usec_timer();
-    irq_enable(uart_irqs[uart], true);
-    irq_enable(dmaInIRQ, true);
+    //irq_enable(uart_irqs[uart], true);
+    //irq_enable(dmaInIRQ, true);
     irq_enable(dmaOutIRQ, true);
 }
 
@@ -269,16 +276,24 @@ void DMXDMAChannel::handleUARTIRQ()
         bool good = inData[activeInBuf][3];
         if (good) activeInBuf ^= 1;
         inData[activeInBuf][3] = 0xff;
+#ifdef SOC_STM32F1
+        dmaRegsIn->MAR = (uint32_t)inData[activeInBuf] + 3;
+#else
         dmaRegsIn->M0AR = (uint32_t)inData[activeInBuf] + 3;
+#endif
         dmaRegsIn->NDTR = 513;
         CR.b.EN = true;
         dmaRegsIn->CR.d32 = CR.d32;
         if (!good)
         {
+#ifdef SOC_STM32F1
+            STM32_DMA_REGS(dmaIn.controller).IFCR.d32 = 0xf << (dmaIn.stream * 4);
+#else
             uint32_t ifcr = 0x3f;
             if (dmaIn.stream & 1) ifcr <<= 6;
             if (dmaIn.stream & 2) ifcr <<= 16;
             STM32_DMA_REGS(dmaIn.controller).IFCR.d32[dmaIn.stream >> 2] = ifcr;
+#endif
             irq_clear_pending(dmaInIRQ);
         }
         else inData[0][0] = 1;
@@ -292,10 +307,14 @@ void DMXDMAChannel::handleUARTIRQ()
 
 void DMXDMAChannel::handleDMAInIRQ()
 {
+#ifdef SOC_STM32F1
+    STM32_DMA_REGS(dmaIn.controller).IFCR.d32 = 0xf << (dmaIn.stream * 4);
+#else
     uint32_t ifcr = 0x3f;
     if (dmaIn.stream & 1) ifcr <<= 6;
     if (dmaIn.stream & 2) ifcr <<= 16;
     STM32_DMA_REGS(dmaIn.controller).IFCR.d32[dmaIn.stream >> 2] = ifcr;
+#endif
     enter_critical_section();
     int buf = activeInBuf ^ inData[0][0];
     inData[0][0] = 0;
@@ -312,10 +331,14 @@ void DMXDMAChannel::handleDMAOutIRQ()
     CR.b.EN = false;
     dmaRegsOut->CR.d32 = CR.d32;
     while (dmaRegsOut->CR.b.EN);
+#ifdef SOC_STM32F1
+    STM32_DMA_REGS(dmaIn.controller).IFCR.d32 = 0xf << (dmaOut.stream * 4);
+#else
     uint32_t ifcr = 0x3f;
     if (dmaOut.stream & 1) ifcr <<= 6;
     if (dmaOut.stream & 2) ifcr <<= 16;
-    STM32_DMA_REGS(dmaOut.controller).IFCR.d32[dmaOut.stream >> 2] = ifcr;
+    STM32_DMA_REGS(dmaIn.controller).IFCR.d32[dmaOut.stream >> 2] = ifcr;
+#endif
     enter_critical_section();
     if (!outPending)
     {
@@ -337,7 +360,11 @@ void DMXDMAChannel::handleDMAOutIRQ()
     GPIO::setMode(txPin, GPIO::MODE_SPECIAL);
     uartRegs->DR = 0;
     while (!uartRegs->SR.b.TXE);
+#ifdef SOC_STM32F1
+    dmaRegsOut->MAR = (uint32_t)outData[activeOutBuf];
+#else
     dmaRegsOut->M0AR = (uint32_t)outData[activeOutBuf];
+#endif
     dmaRegsOut->NDTR = 512;
     CR.b.EN = true;
     dmaRegsOut->CR.d32 = CR.d32;
@@ -483,6 +510,8 @@ void initDMX()
     dmxChannel[1]->setMode(ChannelModeInput);
     dmxChannel[2]->setMode(ChannelModeOutput);
     dmxChannel[3]->setMode(ChannelModeOutput);
-    dmxChannel[4]->setMode(ChannelModeOutput);
+#if defined(SOC_STM32F2) || defined(SOC_STM32F4)
+    //dmxChannel[4]->setMode(ChannelModeOutput);
     //dmxChannel[5]->setMode(ChannelModeOutput);
+#endif
 }
