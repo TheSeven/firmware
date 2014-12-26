@@ -27,18 +27,6 @@ namespace STM32
             CNF_AF_OPENDRAIN = 3,
         };
 
-        enum INITCTL
-        {
-            INITCTL_SET = 0,
-            INITCTL_SKIP = 1,
-        };
-
-        enum INITVAL
-        {
-            INITVAL_LOW = 0,
-            INITVAL_HIGH = 1,
-        };
-
         struct __attribute__((packed)) PORT_REGS
         {
             union CR
@@ -243,39 +231,37 @@ namespace STM32
 #define STM32_GPIOH_REGS STM32_GPIO_REGS(7)
 
 #define GPIO_CONFIG_PORT( \
-    mode0, cnf0, initctl0, initval0, \
-    mode1, cnf1, initctl1, initval1, \
-    mode2, cnf2, initctl2, initval2, \
-    mode3, cnf3, initctl3, initval3, \
-    mode4, cnf4, initctl4, initval4, \
-    mode5, cnf5, initctl5, initval5, \
-    mode6, cnf6, initctl6, initval6, \
-    mode7, cnf7, initctl7, initval7, \
-    mode8, cnf8, initctl8, initval8, \
-    mode9, cnf9, initctl9, initval9, \
-    mode10, cnf10, initctl10, initval10, \
-    mode11, cnf11, initctl11, initval11, \
-    mode12, cnf12, initctl12, initval12, \
-    mode13, cnf13, initctl13, initval13, \
-    mode14, cnf14, initctl14, initval14, \
-    mode15, cnf15, initctl15, initval15, \
+    mode0, type0, speed0, pull0, initval0, \
+    mode1, type1, speed1, pull1, initval1, \
+    mode2, type2, speed2, pull2, initval2, \
+    mode3, type3, speed3, pull3, initval3, \
+    mode4, type4, speed4, pull4, initval4, \
+    mode5, type5, speed5, pull5, initval5, \
+    mode6, type6, speed6, pull6, initval6, \
+    mode7, type7, speed7, pull7, initval7, \
+    mode8, type8, speed8, pull8, initval8, \
+    mode9, type9, speed9, pull9, initval9, \
+    mode10, type10, speed10, pull10, initval10, \
+    mode11, type11, speed11, pull11, initval11, \
+    mode12, type12, speed12, pull12, initval12, \
+    mode13, type13, speed13, pull13, initval13, \
+    mode14, type14, speed14, pull14, initval14, \
+    mode15, type15, speed15, pull15, initval15, \
     dummy \
 ) \
-{ \
-    (uint32_t)(((cnf7) << 30) | ((mode7) << 28) | ((cnf6) << 26) | ((mode6) << 24) | \
-               ((cnf5) << 22) | ((mode5) << 20) | ((cnf4) << 18) | ((mode4) << 16) | \
-               ((cnf3) << 14) | ((mode3) << 12) | ((cnf2) << 10) | ((mode2) << 8) | \
-               ((cnf1) << 6) | ((mode1) << 4) | ((cnf0) << 2) | (mode0)), \
-    (uint32_t)(((cnf15) << 30) | ((mode15) << 28) | ((cnf14) << 26) | ((mode14) << 24) | \
-               ((cnf13) << 22) | ((mode13) << 20) | ((cnf12) << 18) | ((mode12) << 16) | \
-               ((cnf11) << 14) | ((mode11) << 12) | ((cnf10) << 10) | ((mode10) << 8) | \
-               ((cnf9) << 6) | ((mode9) << 4) | ((cnf8) << 2) | (mode8)), \
-    (uint32_t)(((initctl15) << 31) | ((initctl14) << 30) | ((initctl13) << 29) | ((initctl12) << 28) | \
-               ((initctl11) << 27) | ((initctl10) << 26) | ((initctl9) << 25) | ((initctl8) << 24) | \
-               ((initctl7) << 23) | ((initctl6) << 22) | ((initctl5) << 21) | ((initctl4) << 20) | \
-               ((initctl3) << 19) | ((initctl2) << 18) | ((initctl1) << 17) | ((initctl0) << 16) | \
-               ((initval15) << 15) | ((initval14) << 14) | ((initval13) << 13) | ((initval12) << 12) | \
-               ((initval11) << 11) | ((initval10) << 10) | ((initval9) << 9) | ((initval8) << 8) | \
-               ((initval7) << 7) | ((initval6) << 6) | ((initval5) << 5) | ((initval4) << 4) | \
-               ((initval3) << 3) | ((initval2) << 2) | ((initval1) << 1) | (initval0)), \
-}
+    { initval0, pull0, type0, mode0, speed0, }, \
+    { initval1, pull1, type1, mode1, speed1, }, \
+    { initval2, pull2, type2, mode2, speed2, }, \
+    { initval3, pull3, type3, mode3, speed3, }, \
+    { initval4, pull4, type4, mode4, speed4, }, \
+    { initval5, pull5, type5, mode5, speed5, }, \
+    { initval6, pull6, type6, mode6, speed6, }, \
+    { initval7, pull7, type7, mode7, speed7, }, \
+    { initval8, pull8, type8, mode8, speed8, }, \
+    { initval9, pull9, type9, mode9, speed9, }, \
+    { initval10, pull10, type10, mode10, speed10, }, \
+    { initval11, pull11, type11, mode11, speed11, }, \
+    { initval12, pull12, type12, mode12, speed12, }, \
+    { initval13, pull13, type13, mode13, speed13, }, \
+    { initval14, pull14, type14, mode14, speed14, }, \
+    { initval15, pull15, type15, mode15, speed15, }

@@ -132,6 +132,7 @@ namespace STM32
     class __attribute__((packed,aligned(4))) GPIO_F1 final
     {
     public:
+
         enum Speed
         {
             SPEED_INPUT = 0,
