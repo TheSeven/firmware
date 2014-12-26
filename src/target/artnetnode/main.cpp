@@ -48,5 +48,22 @@ int main()
 
 void dmxInUpdated(int channel)
 {
-
+    struct pbuf* buf = pbuf_alloc(PBUF_TRANSPORT, 18, PBUF_RAM);
+    if (!buf) return;
+    struct pbuf* payload = pbuf_alloc(PBUF_RAW, 512, PBUF_POOL);
+    if (!payload)
+    {
+        pbuf_free(buf);
+        return;
+    }
+    pbuf_take(payload, dmxInChannel[channel]->getInDataPtr(), 512);
+    uint8_t* header = (uint8_t*)buf->payload;
+    memcpy(header, "Art-Net\0\0\x50\0\0\0", 14);
+    header[14] = 8 + channel;
+    header[15] = 0;
+    header[16] = 0;
+    header[17] = 2;
+    pbuf_cat(buf, payload);
+    udp_sendto(artnet_udp, buf, IP_ADDR_BROADCAST, 0x1936);
+    pbuf_free(buf);
 }
