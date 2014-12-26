@@ -136,7 +136,7 @@ namespace STM32
     {
         ::GPIO::configure(PIN_A2, ::GPIO::MODE_OUTPUT, true);
         mdioSendBits(0xffffffff, 32);
-        mdioSendBits((1 << 12) | (opcode << 10) | (phyid << 5) | reg, 14);
+        mdioSendBits((0xd << 12) | (opcode << 10) | (phyid << 5) | reg, 16);
     }
 
     enum Ethernet::Result ETHMAC::phyRead(int phyid, int reg, uint16_t* data)
