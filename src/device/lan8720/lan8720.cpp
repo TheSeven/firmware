@@ -10,6 +10,7 @@ LAN8720::LAN8720(Ethernet::MII::MAC* mac, uint8_t phyId) : mac(mac), phyId(phyId
     uint16_t data = 0x8000;
     mac->phyWrite(phyId, 0x00, data);
     while (data & 0x8000) mac->phyRead(phyId, 0, &data);
+    mac->phyWrite(phyId, 0x11, 0x2000);
 }
 
 enum Ethernet::Result LAN8720::power(bool on)
