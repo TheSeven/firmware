@@ -39,6 +39,7 @@ void lateInit()
 }
 
 
+#include "soc/stm32/uart_regs.h"
 extern void doBackgroundWork()
 {
     if (TIMEOUT_EXPIRED(nextNetTick))

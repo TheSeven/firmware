@@ -59,11 +59,12 @@ void dmxInUpdated(int channel)
     pbuf_take(payload, dmxInChannel[channel]->getInDataPtr(), 512);
     uint8_t* header = (uint8_t*)buf->payload;
     memcpy(header, "Art-Net\0\0\x50\0\0\0", 14);
+    header[13] = channel;
     header[14] = 8 + channel;
     header[15] = 0;
-    header[16] = 0;
-    header[17] = 2;
+    header[16] = 2;
+    header[17] = 0;
     pbuf_cat(buf, payload);
-    udp_sendto(artnet_udp, buf, IP_ADDR_BROADCAST, 0x1936);
+    udp_sendto_if(artnet_udp, buf, IP_ADDR_BROADCAST, 0x1936, &netIf.lwipIf);
     pbuf_free(buf);
 }
