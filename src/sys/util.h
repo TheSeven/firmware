@@ -141,6 +141,7 @@ extern "C"
 
 static inline void discard(uint32_t data)
 {
+    (void)data;
 }
 #endif
 
