@@ -22,7 +22,7 @@ void irq_clear_pending(int irq)
 
 void irq_set_pending(int irq)
 {
-    NVIC_SetPendingIRQ((IRQn_Type)irq);
+    NVIC->STIR = irq;
 }
 
 void irq_set_priority(int irq, int priority)
