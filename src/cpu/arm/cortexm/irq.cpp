@@ -22,7 +22,11 @@ void irq_clear_pending(int irq)
 
 void irq_set_pending(int irq)
 {
+#ifdef CPU_ARM_CORTEX_M0
+    NVIC_ClearPendingIRQ((IRQn_Type)irq);
+#else
     NVIC->STIR = irq;
+#endif
 }
 
 void irq_set_priority(int irq, int priority)
