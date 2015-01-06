@@ -1,4 +1,10 @@
+#include "global.h"
+
 ../../board/flexperiment/nano
 ../../device/ds1820
 ../../device/sdhc_spi
 ../../lib/fatfs
+
+#ifdef HAVE_LCD
+../../device/pcd8544
+#endif

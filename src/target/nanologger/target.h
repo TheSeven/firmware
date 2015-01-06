@@ -22,6 +22,16 @@
     ), \
 }
 
+#define SD_FREQ 25000000
+
+#define HAVE_LCD
+#define LCD_FREQ 4000000
+#define LCD_BIAS 3
+#define LCD_TC 2
+#define LCD_VOP 68
+#define PIN_LCD_CS PIN_F1
+#define PIN_LCD_CD PIN_F0
+
 #define PIN_SENSOR PIN_A0
 #define PIN_SD_CS PIN_B1
 #define PIN_LED PIN_A4
