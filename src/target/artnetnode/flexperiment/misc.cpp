@@ -1,5 +1,6 @@
 #include "global.h"
 #include "target/artnetnode/misc.h"
+#include "target/artnetnode/configstore.h"
 #include "target/artnetnode/network.h"
 #include "target/artnetnode/dmx.h"
 #include "soc/stm32/iwdg_regs.h"
@@ -42,6 +43,12 @@ void lateInit()
 #include "soc/stm32/uart_regs.h"
 extern void doBackgroundWork()
 {
+    if (configChanged)
+    {
+        STM32_IWDG_REGS.KR = 0xaaaa;
+        saveConfig();
+        STM32_IWDG_REGS.KR = 0xaaaa;
+    }
     if (TIMEOUT_EXPIRED(nextNetTick))
     {
         netIf.tick();
@@ -50,7 +57,7 @@ extern void doBackgroundWork()
     }
     if (TIMEOUT_EXPIRED(nextResendTick))
     {
-        for (int i = 0; i < ARRAYLEN(dmxOutChannel); i++)
+        for (uint32_t i = 0; i < ARRAYLEN(dmxOutChannel); i++)
             if (TIMEOUT_EXPIRED(dmxOutChannel[i]->lastSentTime + DMX_RESEND_INTERVAL))
                 dmxOutChannel[i]->sendPacket();
         nextResendTick = TIMEOUT_SETUP(DMX_RESEND_INTERVAL >> 2);
