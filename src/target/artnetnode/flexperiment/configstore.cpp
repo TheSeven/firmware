@@ -58,7 +58,10 @@ void upgradeBoardConfig(int oldVersion, int oldSize)
 void moveConfig(void* ptr, int size)
 {
     uint8_t* base = (uint8_t*)ptr;
-    memmove(base + size, base + *((uint16_t*)ptr), sizeof(SystemConfig) - size);
+    int oldsize = *((uint16_t*)ptr);
+    memmove(base + size, base + oldsize, sizeof(SystemConfig) - size);
+    if (size > oldsize) memset(base + oldsize, 0, size - oldsize);
+    else memset(base + sizeof(SystemConfig), 0, oldsize - size);
 }
 
 void initConfig()
@@ -68,9 +71,13 @@ void initConfig()
     partMgr.getPartition(&configPart, PARTITION_ID);
     configStore.init(&configPart);
     configChanged = false;
-    if (config.data.f.nodeCfg.version != ARTNETNODECONFIG_VERSION)
+    if (config.data.f.nodeCfg.size != sizeof(config.data.f.nodeCfg))
     {
         moveConfig(&config.data.f.nodeCfg, sizeof(config.data.f.nodeCfg));
+        configChanged = true;
+    }
+    if (config.data.f.nodeCfg.version != ARTNETNODECONFIG_VERSION)
+    {
         upgradeNodeConfig(config.data.f.nodeCfg.version, config.data.f.nodeCfg.size);
         configChanged = true;
     }
