@@ -56,7 +56,11 @@ Storage::Result ConfigStore::init(Storage* storage)
         valid = false;
     }
     if (!valid) memset(data, 0, blockSize);
-    data->size = dataSize;
+    if (data->size != dataSize)
+    {
+        memset(((uint8_t*)data) + data->size, 0, dataSize - data->size);
+        data->size = dataSize;
+    }
     if (!haveEmpty)
     {
         uint32_t boundary = partSize >> 1;
