@@ -17,23 +17,31 @@
 #define PARTITION_ID 0x664374654e747241ull
 
 
+static void handleSectionUpgrade(void* ptr, int size, uint16_t version,
+                                 void (*handler)(int oldVersion, int oldSize), bool last);
+static void upgradeBoardConfig(int oldVersion, int oldSize);
+
+
+template<typename T, int V, void (*U)(int oldVersion, int oldSize), bool L> class ConfigSection
+{
+public:
+    uint16_t size;
+    uint16_t version;
+    T data;
+
+    inline void handleUpgrades()
+    {
+        handleSectionUpgrade(this, sizeof(*this), V, U, L);
+    }
+};
+
 union SystemConfig
 {
     uint8_t d8[248];
     struct
     {
-        struct
-        {
-            uint16_t size;
-            uint16_t version;
-            struct ArtNetNodeConfig data;
-        } nodeCfg;
-        struct
-        {
-            uint16_t size;
-            uint16_t version;
-            struct BoardConfig data;
-        } boardCfg;
+        ConfigSection<ArtNetNodeConfig, ARTNETNODECONFIG_VERSION, upgradeNodeConfig, false> nodeCfg;
+        ConfigSection<BoardConfig, BOARDCONFIG_VERSION, upgradeBoardConfig, true> boardCfg;
     } f;
 };
 
@@ -48,20 +56,38 @@ struct BoardConfig* const boardCfg = &config.data.f.boardCfg.data;
 bool configChanged = false;
 
 
-void upgradeBoardConfig(int oldVersion, int oldSize)
+static void upgradeBoardConfig(int oldVersion, int oldSize)
 {
     switch (oldVersion)
     {
     }
 }
 
-void moveConfig(void* ptr, int size)
+static void handleSectionUpgrade(void* ptr, int size, uint16_t version,
+                                 void (*handler)(int oldVersion, int oldSize), bool last)
 {
     uint8_t* base = (uint8_t*)ptr;
-    int oldsize = *((uint16_t*)ptr);
-    memmove(base + size, base + oldsize, sizeof(SystemConfig) - size);
-    if (size > oldsize) memset(base + oldsize, 0, size - oldsize);
-    else memset(base + sizeof(SystemConfig), 0, oldsize - size);
+    ConfigSection<uint8_t, 0, (void(*)(int, int))0, true>* section = (typeof(section))ptr;
+    int oldsize = section->size;
+    if (section->size != size)
+    {
+        if (!last) memmove(base + size, base + section->size, sizeof(SystemConfig) - size);
+        if (size > section->size) memset(base + section->size, 0, size - section->size);
+        else memset(config.data.d8 + sizeof(SystemConfig) + size - section->size, 0, section->size - size);
+        section->size = size;
+        configChanged = true;
+    }
+    if (section->version != version)
+    {
+        if (section->version > version)
+        {
+            section->version = 0;
+            memset(&section->data, 0, size - sizeof(*section) + sizeof(section->data));
+        }
+        handler(section->version, oldsize);
+        section->version = version;
+        configChanged = true;
+    }
 }
 
 void initConfig()
@@ -71,21 +97,8 @@ void initConfig()
     partMgr.getPartition(&configPart, PARTITION_ID);
     configStore.init(&configPart);
     configChanged = false;
-    if (config.data.f.nodeCfg.size != sizeof(config.data.f.nodeCfg))
-    {
-        moveConfig(&config.data.f.nodeCfg, sizeof(config.data.f.nodeCfg));
-        configChanged = true;
-    }
-    if (config.data.f.nodeCfg.version != ARTNETNODECONFIG_VERSION)
-    {
-        upgradeNodeConfig(config.data.f.nodeCfg.version, config.data.f.nodeCfg.size);
-        configChanged = true;
-    }
-    if (config.data.f.boardCfg.version != BOARDCONFIG_VERSION)
-    {
-        upgradeBoardConfig(config.data.f.boardCfg.version, config.data.f.boardCfg.size);
-        configChanged = true;
-    }
+    config.data.f.nodeCfg.handleUpgrades();
+    config.data.f.boardCfg.handleUpgrades();
     if (configChanged) saveConfig();
 }
 
