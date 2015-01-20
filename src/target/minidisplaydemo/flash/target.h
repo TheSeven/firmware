@@ -1,4 +1,4 @@
 #pragma once
 
-#include <target/minidisplaydemo/target.h>
+#include "../target.h"
 
