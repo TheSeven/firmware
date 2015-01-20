@@ -10,6 +10,7 @@ class __attribute__((packed,aligned(4))) BQ24292I final
 public:
     class __attribute__((packed,aligned(4))) Status
     {
+    public:
         bool batteryBelowSystemVoltage : 1;
         bool dieTemperatureLimiting : 1;
         bool inputPowerGood : 1;
