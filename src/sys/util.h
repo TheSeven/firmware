@@ -143,5 +143,12 @@ static inline void discard(uint32_t data)
 {
     (void)data;
 }
+
+#ifdef __cplusplus
+inline void * operator new (size_t, void * p) throw() { return p ; }
+inline void * operator new[] (size_t, void * p) throw() { return p ; }
+inline void operator delete (void *, void *) throw() {}
+inline void operator delete[] (void *, void *) throw() {}
 #endif
 
+#endif
