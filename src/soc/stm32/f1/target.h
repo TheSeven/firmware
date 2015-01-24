@@ -1,6 +1,9 @@
 #pragma once
 
 #define SOC_STM32F1
+#ifdef STM32_USE_INOFFICIAL
+#define FLASH_SIZE 256K
+#else
 #if defined(SOC_STM32F1XXXR)
 #define FLASH_SIZE 64K
 #elif defined(SOC_STM32F1XXXB)
@@ -9,6 +12,7 @@
 #define FLASH_SIZE 256K
 #else
 #error Unknown STM32F1 variant!
+#endif
 #endif
 #define SRAM_SIZE 64K
 #define STM32_CAN_BOOT_FROM_RAM

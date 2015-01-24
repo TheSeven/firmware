@@ -2,13 +2,21 @@
 
 #define SOC_STM32F4
 #if defined(SOC_STM32F4XXXE)
+#ifdef STM32_USE_INOFFICIAL
+#define FLASH_SIZE 1M
+#else
 #define FLASH_SIZE 512K
+#endif
 #define SRAM_SIZE 128K
 #elif defined(SOC_STM32F4XXXG) && !defined(SOC_STM32F42X)
 #define FLASH_SIZE 1M
 #define SRAM_SIZE 128K
 #elif defined(SOC_STM32F4XXXG)
+#ifdef STM32_USE_INOFFICIAL
+#define FLASH_SIZE 2M
+#else
 #define FLASH_SIZE 1M
+#endif
 #define SRAM_SIZE 192K
 #elif defined(SOC_STM32F4XXXI)
 #define FLASH_SIZE 2M

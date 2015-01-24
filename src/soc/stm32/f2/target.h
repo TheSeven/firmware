@@ -1,6 +1,10 @@
 #pragma once
 
 #define SOC_STM32F2
+#ifdef STM32_USE_INOFFICIAL
+#define FLASH_SIZE 1M
+#define SRAM_SIZE 128K
+#else
 #if defined(SOC_STM32F2XXXB)
 #define FLASH_SIZE 128K
 #define SRAM_SIZE 64K
@@ -11,13 +15,14 @@
 #define FLASH_SIZE 512K
 #define SRAM_SIZE 128K
 #elif defined(SOC_STM32F2XXXF)
-#define FLASH_SIZE 768K
+#define FLASH_SIZE 512K
 #define SRAM_SIZE 128K
 #elif defined(SOC_STM32F2XXXG)
 #define FLASH_SIZE 1M
 #define SRAM_SIZE 128K
 #else
 #error Unknown STM32F2 variant!
+#endif
 #endif
 #define STM32_CAN_BOOT_FROM_RAM
 #include "soc/stm32/f2/clockgates.h"
