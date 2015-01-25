@@ -16,6 +16,7 @@
 #endif
 #define SRAM_SIZE 64K
 #define STM32_CAN_BOOT_FROM_RAM
+#define DFU_RAM_SIZE 4K
 #include "soc/stm32/f1/clockgates.h"
 #include "soc/stm32/f1/resetlines.h"
 #define STM32_GPIO_DEF_FILE "soc/stm32/f1/gpio_defs.h"

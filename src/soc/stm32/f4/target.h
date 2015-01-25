@@ -26,6 +26,7 @@
 #endif
 #define CCMRAM_SIZE 64K
 #define STM32_CAN_BOOT_FROM_RAM
+#define DFU_RAM_SIZE 8K
 #include "soc/stm32/f2/clockgates.h"
 #include "soc/stm32/f2/resetlines.h"
 #define STM32_GPIO_DEF_FILE "soc/stm32/f2/gpio_defs.h"
