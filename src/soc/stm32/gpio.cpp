@@ -90,6 +90,6 @@ namespace STM32
         setSpecial(pin, (enum Special)(function & 0xf));
     }
     
-    const GPIO::PinController GPIO::Controller = GPIO::PinController();
+    const GPIO::PinController GPIO::Controller;
 
 }

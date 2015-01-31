@@ -24,11 +24,11 @@ public:
 };
 
 
-static MacAddressGenerator addrGen = MacAddressGenerator();
-static STM32::ETHMAC netMAC = STM32::ETHMAC(Ethernet::MII::TYPE_RMII);
-static LAN8720 netPHY = LAN8720(&netMAC, 0);
-static Ethernet::MII::Driver netDriver = Ethernet::MII::Driver(&netMAC, &netPHY);
-Ethernet::Interface netIf = Ethernet::Interface(&netDriver, 1500, addrGen.address);
+static MacAddressGenerator addrGen;
+static STM32::ETHMAC netMAC(Ethernet::MII::TYPE_RMII);
+static LAN8720 netPHY(&netMAC, 0);
+static Ethernet::MII::Driver netDriver(&netMAC, &netPHY);
+Ethernet::Interface netIf(&netDriver, 1500, addrGen.address);
 
 
 void initNetwork()

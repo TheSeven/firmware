@@ -103,11 +103,11 @@ namespace STM32
         }
     }
 
-    const SPI SPI::SPI1 = SPI(0);
-    const SPI SPI::SPI2 = SPI(1);
-    const SPI SPI::SPI3 = SPI(2);
-    const SPI SPI::SPI4 = SPI(3);
-    const SPI SPI::SPI5 = SPI(4);
-    const SPI SPI::SPI6 = SPI(5);
+    const SPI SPI::SPI1(0);
+    const SPI SPI::SPI2(1);
+    const SPI SPI::SPI3(2);
+    const SPI SPI::SPI4(3);
+    const SPI SPI::SPI5(4);
+    const SPI SPI::SPI6(5);
 
 }

@@ -107,4 +107,4 @@ void STM32::GPIO_F1::PinController::setSpecial(unsigned int pin, int function) c
 {
 }
 
-const STM32::GPIO_F1::PinController STM32::GPIO_F1::Controller = STM32::GPIO_F1::PinController();
+const STM32::GPIO_F1::PinController STM32::GPIO_F1::Controller;

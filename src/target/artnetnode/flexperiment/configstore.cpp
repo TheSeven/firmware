@@ -46,11 +46,11 @@ union SystemConfig
 };
 
 
-static SPIFlash flash = SPIFlash(&STM32::SPI::SPI1, PIN_C2, 10000000, 100000000);
-static FlashPartitionManager<15, 256> partMgr = FlashPartitionManager<15, 256>(&flash);
+static SPIFlash flash(&STM32::SPI::SPI1, PIN_C2, 10000000, 100000000);
+static FlashPartitionManager<15, 256> partMgr(&flash);
 static StoragePartition configPart;
-static ConfigData<SystemConfig, 256> config = ConfigData<SystemConfig, 256>();
-static ConfigStore configStore = ConfigStore(&config);
+static ConfigData<SystemConfig, 256> config;
+static ConfigStore configStore(&config);
 struct ArtNetNodeConfig* const nodeCfg = &config.data.f.nodeCfg.data;
 struct BoardConfig* const boardCfg = &config.data.f.boardCfg.data;
 bool configChanged = false;

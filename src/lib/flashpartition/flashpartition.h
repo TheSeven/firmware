@@ -17,7 +17,7 @@ private:
     Storage* storage;
     StoragePartition superblock;
     ConfigData<PartitionDescriptor[M], S> partTable;
-    ConfigStore store = ConfigStore(&partTable);
+    ConfigStore store;
 
     PartitionDescriptor* findPartition(uint64_t name)
     {
@@ -28,20 +28,18 @@ private:
     }
 
 public:
-    FlashPartitionManager(Storage* storage)
+    FlashPartitionManager(Storage* storage) : storage(storage), store(&partTable)
     {
-        this->storage = storage;
         uint32_t size = store.getSize(storage);
         uint32_t offset = storage->pageCount / MAX(storage->programSize, storage->eraseSize) - size;
-        superblock = StoragePartition(storage, offset, size);
-        store.init(&superblock);
+        store.init(new(&superblock) StoragePartition(storage, offset, size));
     }
 
     bool getPartition(StoragePartition* partition, uint64_t name)
     {
         PartitionDescriptor* descriptor = findPartition(name);
         if (!descriptor) return false;
-        *partition = StoragePartition(storage, descriptor->offset, descriptor->size);
+        new(partition) StoragePartition(storage, descriptor->offset, descriptor->size);
         return true;
     }
 

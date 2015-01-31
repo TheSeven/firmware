@@ -257,9 +257,9 @@ namespace STM32
         busy = false;
     }
 
-    I2C I2C::I2C1 = I2C(0);
-    I2C I2C::I2C2 = I2C(1);
-    I2C I2C::I2C3 = I2C(2);
+    I2C I2C::I2C1(0);
+    I2C I2C::I2C2(1);
+    I2C I2C::I2C3(2);
 
 }
 

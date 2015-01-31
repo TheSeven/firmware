@@ -21,11 +21,11 @@
 #include "lib/fatfs/fatfs.h"
 
 
-OneWire::Bus onewire = OneWire::Bus(PIN_SENSOR);
+OneWire::Bus onewire(PIN_SENSOR);
 DS1820 sensor[MAX_SENSORS];
-SDHC_SPI sd = SDHC_SPI(&STM32::SPI::SPI1, PIN_SD_CS, SD_FREQ);
+SDHC_SPI sd(&STM32::SPI::SPI1, PIN_SD_CS, SD_FREQ);
 FRESULT mountResult;
-FatFs::FileSystem fs = FatFs::FileSystem(&sd, 0, "0:", &mountResult);
+FatFs::FileSystem fs(&sd, 0, "0:", &mountResult);
 uint16_t rtcFrequency;
 int16_t rtcDeviation;
 uint16_t lastTime;
@@ -33,7 +33,7 @@ int timeOffset;
 
 #ifdef HAVE_LCD
 #include "device/pcd8544/pcd8544.h"
-PCD8544 lcd = PCD8544(&STM32::SPI::SPI1, PIN_LCD_CS, LCD_FREQ, PIN_LCD_CD, LCD_BIAS, LCD_TC, LCD_VOP);
+PCD8544 lcd(&STM32::SPI::SPI1, PIN_LCD_CS, LCD_FREQ, PIN_LCD_CD, LCD_BIAS, LCD_TC, LCD_VOP);
 const uint8_t font[] =
 {
     0x20, 0x6d,  // ' ' - 'm'
@@ -313,7 +313,7 @@ void readConfig()
     FatFs::FileMode mode = { 0 };
     mode.read = true;
     FRESULT result;
-    FatFs::File file = FatFs::File("/config.txt", mode, &result);
+    FatFs::File file("/config.txt", mode, &result);
     if (result != FR_OK) error(3);
 
     memset(&config, 0, sizeof(config));
@@ -393,7 +393,7 @@ void openLogFile(FatFs::File* file)
     {
         filename[4] = '0' + i / 10;
         filename[5] = '0' + i % 10;
-        *file = FatFs::File(filename, mode, &result);
+        new(file) FatFs::File(filename, mode, &result);
         if (result == FR_OK) break;
     }
 
@@ -689,7 +689,7 @@ void initSensors()
     {
         uint64_t* deviceId = onewire.discoverDevice();
         if (!deviceId) error(5);
-        sensor[i] = DS1820(&onewire, *deviceId);
+        new(&sensor[i]) DS1820(&onewire, *deviceId);
         sensor[i].setResolution(config.resolution);
     }
 

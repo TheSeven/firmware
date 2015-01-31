@@ -9,7 +9,7 @@
 
 int main()
 {
-    PCD8544 lcd = PCD8544(&STM32::SPI::SPI1, PIN_B1, 4000000, PIN_B2, 3, 2, 68);
+    PCD8544 lcd(&STM32::SPI::SPI1, PIN_B1, 4000000, PIN_B2, 3, 2, 68);
     lcd.print(0, 0, PCD8544::defaultFont, false, (char*)"Hello, World!");
 
     while (true);
