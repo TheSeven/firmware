@@ -452,9 +452,11 @@ void rtcSleep(int until)
     CR.b.ALRAIE = true;
     STM32_RTC_REGS.CR.d32 = CR.d32;
     enter_critical_section();
-    if (until > getTime())
+    while (until > getTime())
     {
+#ifndef DEBUG
         SCB->SCR = SCB_SCR_SLEEPDEEP_Msk;
+#endif
         idle();
         SCB->SCR = 0;
     }
