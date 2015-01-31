@@ -366,18 +366,18 @@ void hexdump(FatFs::File* file, const void* data, int len)
 
 void printNumber(FatFs::File* file, int32_t number)
 {
-    if (file->printf("%d.%03d", number / 1000, ABS(number % 1000)) <= 0) error(7);
+    if (file->printf("%.3D", number) <= 0) error(7);
 }
 
 
 #ifdef HAVE_LCD
 int printTempLCD(int row, char label, int32_t number)
 {
-    return lcd.printf(row, 0, font, 0, "%c:%3d.%03d°C ", label, number / 1000, ABS(number % 1000));
+    return lcd.printf(row, 0, font, 0, "%c:%3.3D°C ", label, number);
 }
 int printVoltLCD(int row, char label, int32_t number)
 {
-    return lcd.printf(row, 50, font, 0, "%c:%d.%03dV ", label, number / 1000, ABS(number % 1000));
+    return lcd.printf(row, 50, font, 0, "%c:%.3DV ", label, number);
 }
 #endif
 
