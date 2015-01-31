@@ -5,6 +5,7 @@
 
 LAN8720::LAN8720(Ethernet::MII::MAC* mac, uint8_t phyId) : mac(mac), phyId(phyId)
 {
+    while (read_usec_timer() < 10000);
     mac->phyWrite(phyId, 0x12, 0x40e0);
     uint16_t data = 0x8000;
     mac->phyWrite(phyId, 0x00, data);
