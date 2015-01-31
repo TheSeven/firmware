@@ -216,7 +216,7 @@ void DS1820::wait(int timeout)
 }
 
 
-void __attribute__((noreturn)) error(int number)
+void __attribute__((noreturn)) error(uint32_t number)
 {
 #ifdef HAVE_LCD
     const static char* const errmsg[] =
@@ -242,7 +242,7 @@ void __attribute__((noreturn)) error(int number)
         udelay(1000000);
         GPIO::setLevel(PIN_LED, false);
         udelay(1000000);
-        for (int i = 0; i < number; i++)
+        for (uint32_t i = 0; i < number; i++)
         {
             GPIO::setLevel(PIN_LED, true);
             udelay(50000);
