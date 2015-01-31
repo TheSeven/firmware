@@ -449,65 +449,65 @@ extern "C" void dma2_stream5_irqhandler()
     dmxChannelInstance[3].handleDMAOutIRQ();
 }
 #elif defined(SOC_STM32F2) || defined(SOC_STM32F4)
-    extern "C" void dma1_stream1_irqhandler()
-    {
-        dmxChannelInstance[4].handleDMAInIRQ();
-    }
+extern "C" void dma1_stream1_irqhandler()
+{
+    dmxChannelInstance[4].handleDMAInIRQ();
+}
 
-    extern "C" void dma1_stream2_irqhandler()
-    {
-        dmxChannelInstance[2].handleDMAInIRQ();
-    }
+extern "C" void dma1_stream2_irqhandler()
+{
+    dmxChannelInstance[2].handleDMAInIRQ();
+}
 
-    extern "C" void dma1_stream3_irqhandler()
-    {
-        dmxChannelInstance[3].handleDMAInIRQ();
-    }
+extern "C" void dma1_stream3_irqhandler()
+{
+    dmxChannelInstance[3].handleDMAInIRQ();
+}
 
-    extern "C" void dma1_stream4_irqhandler()
-    {
-        dmxChannelInstance[2].handleDMAOutIRQ();
-    }
+extern "C" void dma1_stream4_irqhandler()
+{
+    dmxChannelInstance[2].handleDMAOutIRQ();
+}
 
-    extern "C" void dma1_stream5_irqhandler()
-    {
-        dmxChannelInstance[3].handleDMAOutIRQ();
-    }
+extern "C" void dma1_stream5_irqhandler()
+{
+    dmxChannelInstance[3].handleDMAOutIRQ();
+}
 
-    extern "C" void dma1_stream6_irqhandler()
-    {
-        dmxChannelInstance[1].handleDMAInIRQ();
-    }
+extern "C" void dma1_stream6_irqhandler()
+{
+    dmxChannelInstance[1].handleDMAInIRQ();
+}
 
-    extern "C" void dma1_stream7_irqhandler()
-    {
-        dmxChannelInstance[1].handleDMAOutIRQ();
-    }
+extern "C" void dma1_stream7_irqhandler()
+{
+    dmxChannelInstance[1].handleDMAOutIRQ();
+}
 
-    extern "C" void dma1_stream8_irqhandler()
-    {
-        dmxChannelInstance[4].handleDMAOutIRQ();
-    }
+extern "C" void dma1_stream8_irqhandler()
+{
+    dmxChannelInstance[4].handleDMAOutIRQ();
+}
 
-    extern "C" void dma2_stream2_irqhandler()
-    {
-        dmxChannelInstance[5].handleDMAInIRQ();
-    }
+extern "C" void dma2_stream2_irqhandler()
+{
+    dmxChannelInstance[5].handleDMAInIRQ();
+}
 
-    extern "C" void dma2_stream3_irqhandler()
-    {
-        dmxChannelInstance[0].handleDMAInIRQ();
-    }
+extern "C" void dma2_stream3_irqhandler()
+{
+    dmxChannelInstance[0].handleDMAInIRQ();
+}
 
-    extern "C" void dma2_stream7_irqhandler()
-    {
-        dmxChannelInstance[5].handleDMAOutIRQ();
-    }
+extern "C" void dma2_stream7_irqhandler()
+{
+    dmxChannelInstance[5].handleDMAOutIRQ();
+}
 
-    extern "C" void dma2_stream8_irqhandler()
-    {
-        dmxChannelInstance[0].handleDMAOutIRQ();
-    }
+extern "C" void dma2_stream8_irqhandler()
+{
+    dmxChannelInstance[0].handleDMAOutIRQ();
+}
 #endif
 
 
