@@ -98,12 +98,17 @@ enum Storage::Result SDHC_SPI::reset()
     frequency = 400000;
     select();
     deselect();
-    select();
-    if (sendCmd(0, 0) != 1)
+    deselbytes = 1;
+    int tries = 10;
+    int i;
+    for (i = 0; i < tries; i++)
     {
+        select();
+        if (sendCmd(0, 0) == 1) break;
         deselect();
-        return RESULT_COMM_ERROR;
+        udelay(i * 10);
     }
+    if (i >= tries) return RESULT_COMM_ERROR;
     if (sendCmd(8, 0x1aa) == 1)
     {
         uint32_t ocr = readR3();
@@ -161,12 +166,8 @@ enum Storage::Result SDHC_SPI::getStatus()
     return initialized ? RESULT_OK : RESULT_INVALID_STATE;
 }
 
-enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
+enum Storage::Result SDHC_SPI::readInternal(uint32_t page, uint32_t len, void* buf)
 {
-    if (!initialized) return RESULT_INVALID_STATE;
-    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
-    if (!len) return RESULT_OK;
-    if (!sdhc) page *= 512;
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
     if (len == 1)
@@ -191,12 +192,20 @@ enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
     return rc;
 }
 
-enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* buf)
+enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
+    enum Storage::Result rc = readInternal(page, len, buf);
+    if (rc == RESULT_OK) return rc;
+    reset();
+    return readInternal(page, len, buf);
+}
+
+enum Storage::Result SDHC_SPI::writeInternal(uint32_t page, uint32_t len, const void* buf)
+{
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
     if (len == 1)
@@ -220,15 +229,35 @@ enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* bu
     return rc;
 }
 
+enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* buf)
+{
+    if (!initialized) return RESULT_INVALID_STATE;
+    if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
+    if (!len) return RESULT_OK;
+    if (!sdhc) page *= 512;
+    enum Storage::Result rc = writeInternal(page, len, buf);
+    if (rc == RESULT_OK) return rc;
+    reset();
+    return writeInternal(page, len, buf);
+}
+
+enum Storage::Result SDHC_SPI::eraseInternal(uint32_t page, uint32_t len)
+{
+    enum Storage::Result rc = RESULT_COMM_ERROR;
+    select();
+    if (sendCmd(32, page) == 0 && sendCmd(33, page + len - 1) == 0 && sendCmd(38, 0) == 0 && waitIdle()) rc = RESULT_OK;
+    deselect();
+    return rc;
+}
+
 enum Storage::Result SDHC_SPI::erase(uint32_t page, uint32_t len)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
-    enum Storage::Result rc = RESULT_COMM_ERROR;
-    select();
-    if (sendCmd(32, page) == 0 && sendCmd(33, page + len - 1) == 0 && sendCmd(38, 0) == 0 && waitIdle()) rc = RESULT_OK;
-    deselect();
-    return rc;
+    enum Storage::Result rc = eraseInternal(page, len);
+    if (rc == RESULT_OK) return rc;
+    reset();
+    return eraseInternal(page, len);
 }

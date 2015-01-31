@@ -16,6 +16,9 @@ public:
     virtual enum Result erase(uint32_t page, uint32_t len);
 
 private:
+    enum Result readInternal(uint32_t page, uint32_t len, void* buf);
+    enum Result writeInternal(uint32_t page, uint32_t len, const void* buf);
+    enum Result eraseInternal(uint32_t page, uint32_t len);
     bool waitIdle();
     int sendCmd(uint8_t cmd, uint32_t arg);
     uint32_t readR3();
