@@ -22,6 +22,8 @@
     ), \
 }
 
+#define VERSION "0.1"
+
 #define SD_FREQ 25000000
 
 #define HAVE_LCD

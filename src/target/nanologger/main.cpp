@@ -399,7 +399,13 @@ void openLogFile(FatFs::File* file)
 
     if (result != FR_OK) error(6);
 
-    safePuts(file, "Time");
+    safePuts(file,
+        "nanologger " VERSION
+#ifdef HAVE_LCD
+        " with LCD"
+#endif
+        "\nTime"
+    );
     char sensorNum[] = ";Sensor00";
     for (int i = 0; i < config.sensors; i++)
     {
@@ -703,7 +709,7 @@ void initSensors()
 int main()
 {
 #ifdef HAVE_LCD
-    lcd.printf(0, 0, font, 0, "nanologger 0.1 by");
+    lcd.printf(0, 0, font, 0, "nanologger " VERSION " by");
     lcd.printf(1, 0, font, 0, "Michael Sparmann");
 #endif
 
