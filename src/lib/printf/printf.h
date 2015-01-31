@@ -7,7 +7,7 @@
 extern "C"
 {
 #endif
-    extern int printf_format(int (*push)(void *userp, unsigned char data), void *userp, const char *fmt, va_list ap);
+    extern int printf_format(int (*push)(void *userp, unsigned char data), void *userp, const char *fmt, va_list args);
 #ifdef __cplusplus
 }
 #endif
