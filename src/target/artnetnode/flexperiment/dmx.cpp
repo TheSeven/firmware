@@ -301,7 +301,7 @@ void DMXDMAChannel::handleUARTIRQ()
 #endif
             irq_clear_pending(dmaInIRQ);
         }
-        else
+        else if (dmaRegsIn->CR.b.EN)
         {
             inData[0][0] = 1;
             irq_set_pending(dmaInIRQ);
