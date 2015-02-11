@@ -54,11 +54,12 @@ namespace STM32
 #endif
         int br = 0;
         for (baseclock >>= 1; baseclock > frequency && br < 7; baseclock >>= 1) br++;
+        union STM32_SPI_REG_TYPE::CR1 CR1 = { 0 };
+        regs->CR1.d32 = CR1.d32;
         regs->I2SCFGR.d32 = 0;
         union STM32_SPI_REG_TYPE::CR2 CR2 = { 0 };
         CR2.b.FRXTH = true;
         regs->CR2.d32 = CR2.d32;
-        union STM32_SPI_REG_TYPE::CR1 CR1 = { 0 };
         CR1.b.SSM = true;
         CR1.b.SSI = true;
         CR1.b.MSTR = true;
