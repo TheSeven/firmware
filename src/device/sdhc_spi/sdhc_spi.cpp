@@ -105,7 +105,9 @@ enum Storage::Result SDHC_SPI::reset()
     {
         select();
         if (sendCmd(0, 0) == 1) break;
+        if (i) deselbytes = 255;
         deselect();
+        deselbytes = 1;
         udelay(i * 10);
     }
     if (i >= tries) return RESULT_COMM_ERROR;
