@@ -106,7 +106,7 @@ struct __attribute__((packed)) STM32_USART_REG_TYPE
             uint32_t SBKRQ : 1;
             uint32_t MMRQ : 1;
             uint32_t RXFRQ : 1;
-            uint32_t : 32;
+            uint32_t : 28;
         } b;
     } RQR;
     union ISR
@@ -162,12 +162,15 @@ struct __attribute__((packed)) STM32_USART_REG_TYPE
     uint32_t TDR;
 };
 
-#ifdef SOC_STM32F1
+#if defined(SOC_STM32F0) || defined(SOC_STM32F1)
 #define STM32_USART1_REGS (*((volatile STM32_USART_REG_TYPE*)0x40013800))
 #define STM32_USART2_REGS (*((volatile STM32_USART_REG_TYPE*)0x40004400))
 #define STM32_USART3_REGS (*((volatile STM32_USART_REG_TYPE*)0x40004800))
 #define STM32_UART4_REGS (*((volatile STM32_USART_REG_TYPE*)0x40004c00))
 #define STM32_UART5_REGS (*((volatile STM32_USART_REG_TYPE*)0x40005000))
+#ifdef SOC_STM32F0
+#define STM32_USART6_REGS (*((volatile STM32_USART_REG_TYPE*)0x40011400))
+#endif
 #else
 #define STM32_USART1_REGS (*((volatile STM32_USART_REG_TYPE*)0x40011000))
 #define STM32_USART2_REGS (*((volatile STM32_USART_REG_TYPE*)0x40004400))
@@ -175,6 +178,8 @@ struct __attribute__((packed)) STM32_USART_REG_TYPE
 #define STM32_UART4_REGS (*((volatile STM32_USART_REG_TYPE*)0x40004c00))
 #define STM32_UART5_REGS (*((volatile STM32_USART_REG_TYPE*)0x40005000))
 #define STM32_USART6_REGS (*((volatile STM32_USART_REG_TYPE*)0x40011400))
+#ifdef SOC_STM32F42X
 #define STM32_UART7_REGS (*((volatile STM32_USART_REG_TYPE*)0x40007800))
 #define STM32_UART8_REGS (*((volatile STM32_USART_REG_TYPE*)0x40007c00))
+#endif
 #endif
