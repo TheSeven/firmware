@@ -6,6 +6,35 @@
 
 #ifdef CPU_ARM_CORTEX_M0
 
+.section .text.__clzsi2,"ax",%progbits
+.global __clzsi2
+.type __clzsi2, %function
+__clzsi2:
+    movs r1, #28
+    movs r3, #1
+    lsls r3, r3, #16
+    cmp r0, r3
+    bcc 2f
+    lsrs r0, r0, #16
+    subs r1, r1, #16
+2:  lsrs r3, r3, #8
+    cmp r0, r3
+    bcc 2f
+    lsrs r0, r0, #8
+    subs r1, r1, #8
+2:  lsrs r3, r3, #4
+    cmp r0, r3
+    bcc 2f
+    lsrs r0, r0, #4
+    subs r1, r1, #4
+2:  adr r2, 1f
+    ldrb r0, [r2, r0]
+    add r0, r0, r1
+    bx lr
+.align 2
+1:  .byte 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+.size __clzsi2, . - __clzsi2
+
 .section .text.__aeabi_lmul,"ax",%progbits
 .global __aeabi_lmul
 .type __aeabi_lmul, %function
