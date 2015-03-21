@@ -15,6 +15,9 @@ const struct SPIFlash::DeviceType SPIFlash::deviceTypes[] =
 #ifdef SPIFLASH_SUPPORT_W25Q80BV
     { .jedecId = { 0xef, 0x40, 0x14 }, .eraseCmd = 0x20, .maxSpeed = 104, .pageSize = 8, .sectorSize = 4, .sectorCount = 8 },
 #endif
+#ifdef SPIFLASH_SUPPORT_MX25L400
+    { .jedecId = { 0xc2, 0x20, 0x13 }, .eraseCmd = 0x20, .maxSpeed = 70, .pageSize = 8, .sectorSize = 4, .sectorCount = 7 },
+#endif
 };
 
 SPIFlash::SPIFlash(const SPI::Bus* bus, GPIO::Pin cspin, int initSpeed, int maxSpeed)
