@@ -3,6 +3,7 @@
 #include "global.h"
 #include "interface/gpio/gpio.h"
 #include "interface/spi/spi.h"
+#include "lib/fonts/prop8/prop8.h"
 
 
 class __attribute__((packed,aligned(4))) PCD8544 final : SPI::Device
@@ -16,27 +17,26 @@ public:
     void setBias(int bias);
     void setTc(int tc);
     void clear();
-    int putch(int row, int col, const uint8_t* font, uint8_t invert, char c);
-    int print(int row, int col, const uint8_t* font, uint8_t invert, const char* text);
-    int printf(int row, int col, const uint8_t* font, uint8_t invert, const char* format, ...);
+    int putch(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, char c);
+    int print(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, const char* text);
+    int printf(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, const char* format, ...);
     int blit(int row, int col, uint8_t* data, int len);
-    static const uint8_t defaultFont[];
+    const Fonts::Prop8::Font* defaultFont = Fonts::Prop8::small;
 
 private:
     struct PrintfState
     {
         PCD8544* obj;
-        const uint8_t* font;
+        const Fonts::Prop8::Font* font;
         uint8_t invert;
         uint8_t col;
     };
 
     void sendCmd(bool ext, uint8_t cmd);
     bool jump(int row, int col);
-    int drawChar(int col, const uint8_t* font, uint8_t invert, char c);
+    int drawChar(int col, const Fonts::Prop8::Font* font, uint8_t invert, char c);
     static int printfChar(void* state, uint8_t data);
 
-    SPI::Device* spi;
     GPIO::Pin cd;
     uint8_t bias;
     uint8_t tc;
