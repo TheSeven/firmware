@@ -14,7 +14,7 @@
 static const char printf_hexdigit[] = "0123456789ABCDEF";
 
 
-int printf_format(int (*push)(void *userp, unsigned char data), void *userp, const char *fmt, va_list args)
+int __attribute__((optimize("-Os"))) printf_format(int (*push)(void *userp, unsigned char data), void *userp, const char *fmt, va_list args)
 {
     int printed = 0;
     bool parsing = false;
