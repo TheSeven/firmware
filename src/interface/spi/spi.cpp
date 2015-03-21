@@ -22,6 +22,12 @@ void SPI::Device::deselect()
     bus->deselect();
 }
 
+void SPI::Device::reselect()
+{
+    GPIO::setLevel(cspin, true);
+    GPIO::setLevel(cspin, false);
+}
+
 uint8_t SPI::Device::pushByte(uint8_t byte)
 {
     return bus->pushByte(byte);

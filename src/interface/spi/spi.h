@@ -28,6 +28,7 @@ namespace SPI
         Device(const Bus* bus, GPIO::Pin cspin, int frequency);
         void select();
         void deselect();
+        void reselect();
         uint8_t pushByte(uint8_t byte);
         void pushBuffer(const void* inbuf, void* outbuf, int len);
     };
