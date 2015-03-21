@@ -6,12 +6,12 @@
 
 class __attribute__((packed,aligned(4))) ConfigDataHeader
 {
-    public:
-        uint32_t crc;
-        uint16_t size;
-        int16_t usn;
+public:
+    uint32_t crc;
+    uint16_t size;
+    int16_t usn;
 
-        constexpr ConfigDataHeader(uint16_t size) : crc(0), size(size), usn(0) {}
+    constexpr ConfigDataHeader(uint16_t size) : crc(0), size(size), usn(0) {}
 };
 
 template<typename T, int S> class __attribute__((packed,aligned(4))) ConfigData : public ConfigDataHeader
