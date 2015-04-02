@@ -306,7 +306,7 @@ handle_number:
 #ifdef PRINTF_ENABLE_PRECISION
             if (have_precision)
             {
-                int len = buffer + sizeof(buffer) - ptr - 1;
+                int len = buf + sizeof(buf) - ptr - 1;
                 if (len < param)
                 {
                     pad_precision = true;
