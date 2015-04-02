@@ -1,4 +1,4 @@
-init.c
+init.cpp
 util.cpp
 time.cpp
 serialnum.cpp
