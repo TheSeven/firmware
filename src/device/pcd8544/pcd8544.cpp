@@ -135,7 +135,7 @@ int PCD8544::printf(int row, int col, const Fonts::Prop8::Font* font, uint8_t in
     return printfState.col;
 }
 
-int PCD8544::blit(int row, int col, uint8_t* data, int len)
+int PCD8544::blit(int row, int col, const uint8_t* data, int len)
 {
     if (!jump(row, col)) return col;
     col += len;
