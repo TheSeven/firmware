@@ -4,6 +4,70 @@
 #include "sys/util.h"
 
 
+enum EntryType
+{
+    End = 0,
+    Delay = 0,
+    Len_1 = 1,
+    Len_2 = 2,
+    Len_3 = 3,
+    Len_4 = 4,
+    Len_5 = 5,
+    SwitchBank = 6,
+};
+
+const uint8_t NRF::SE8R01::initSequence[] =
+{
+    Reg_Config | (Len_1 << 5), 0x03,
+    Reg_RfChannel | (Len_1 << 5), 0x32,
+    Reg_RfSetup | (Len_1 << 5), 0x48,
+    Reg_GuardCtl | (Len_1 << 5), 0x77,
+    (SwitchBank << 5),
+    IntReg_PllCtl0 | (Len_4 << 5), 0x40, 0x00, 0x10, 0xe6,
+    IntReg_CalCtl | (Len_5 << 5), 0x20, 0x08, 0x50, 0x40, 0x50,
+    IntReg_IfFreq | (Len_3 << 5), 0x00, 0x00, 0x1e,
+    IntReg_FDev | (Len_1 << 5), 0x29,
+    IntReg_DacCalHi | (Len_1 << 5), 0x7f,
+    IntReg_AgcGain | (Len_4 << 5), 0x02, 0xc1, 0xeb, 0x1c,
+    IntReg_RfIvGen | (Len_4 << 5), 0x97, 0x64, 0x00, 0x81,
+    (SwitchBank << 5),
+    (Delay << 5) | 20,
+    Reg_Tuning | (Len_5 << 5), 0x28, 0x32, 0x80, 0x90, 0x00,
+    (Delay << 5) | 1,
+    (SwitchBank << 5),
+    IntReg_PllCtl0 | (Len_4 << 5), 0x40, 0x01, 0x30, 0xe2,
+    IntReg_CalCtl | (Len_5 << 5), 0x29, 0x89, 0x55, 0x40, 0x50,
+    IntReg_RxCtrl | (Len_4 << 5), 0x55, 0xc2, 0x09, 0xac,
+    IntReg_FAgcCtrl | (Len_4 << 5), 0x00, 0x14, 0x08, 0x29,
+    IntReg_AgcGain | (Len_4 << 5), 0x02, 0xc1, 0xcb, 0x1c,
+    IntReg_RfIvGen | (Len_4 << 5), 0x97, 0x64, 0x00, 0x01,
+    IntReg_TestPkDet | (Len_4 << 5), 0x2a, 0x04, 0x00, 0x7d,
+    (SwitchBank << 5),
+    (End << 5),
+};
+
+
+void NRF::SE8R01::switchBank()
+{
+    activate(Feature_SwitchRegisterBank);
+}
+
+void NRF::SE8R01::init()
+{
+    if (getStatus().b.regBank) switchBank();
+    const uint8_t* ptr = initSequence;
+    while (uint8_t cmd = *ptr++)
+    {
+        if ((cmd >> 5) == Delay) udelay(8 * (cmd & 0x1f));
+        else if ((cmd >> 5) == SwitchBank) switchBank();
+        else
+        {
+            writeReg(cmd & 0x1f, ptr, cmd >> 5);
+            ptr += cmd >> 5;
+        }
+    }
+}
+
 void NRF::SE8R01::configure(Configuration* config)
 {
     NRF::SE8R01::Config configOff = { 0 };

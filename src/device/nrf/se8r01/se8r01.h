@@ -39,8 +39,41 @@ namespace NRF
             Reg_FifoStatus = 0x17,
             Reg_DynLengthCtl = 0x1c,
             Reg_FeatureCtl = 0x1d,
-            Reg_Tuning = 0x1d,
-            Reg_GuardCtl = 0x1e,
+            Reg_Tuning = 0x1e,
+            Reg_GuardCtl = 0x1f,
+        };
+
+        enum InternalRegister
+        {
+            IntReg_Line = 0x00,
+            IntReg_PllCtl0 = 0x01,
+            IntReg_PllCtl1 = 0x02,
+            IntReg_CalCtl = 0x03,
+            IntReg_ACntReg = 0x04,
+            IntReg_BCntReg = 0x05,
+            IntReg_Reserved0 = 0x06,
+            IntReg_Status = 0x07,
+            IntReg_State = 0x08,
+            IntReg_Chan = 0x09,
+            IntReg_IfFreq = 0x0a,
+            IntReg_AfcCor = 0x0b,
+            IntReg_FDev = 0x0c,
+            IntReg_DacRange = 0x0d,
+            IntReg_DacIn = 0x0e,
+            IntReg_CTuning = 0x0f,
+            IntReg_FTuning = 0x10,
+            IntReg_RxCtrl = 0x11,
+            IntReg_FAgcCtrl = 0x12,
+            IntReg_FAcgCtrl1 = 0x13,
+            IntReg_DacCalLow = 0x17,
+            IntReg_DacCalHi = 0x18,
+            IntReg_Reserved1 = 0x19,
+            IntReg_DocDacI = 0x1a,
+            IntReg_DocDacQ = 0x1b,
+            IntReg_AgcCtrl = 0x1c,
+            IntReg_AgcGain = 0x1d,
+            IntReg_RfIvGen = 0x1e,
+            IntReg_TestPkDet = 0x1f,
         };
 
         union __attribute__((packed)) AutoAckCtl
@@ -210,6 +243,11 @@ namespace NRF
             } b;
         };
 
+        enum Feature
+        {
+            Feature_SwitchRegisterBank = 0x53,
+        };
+
         struct __attribute__((packed)) Configuration
         {
             union Config config;
@@ -225,14 +263,20 @@ namespace NRF
             union GuardCtl guardCtl;
         };
 
-        SE8R01(const ::SPI::Bus* bus, GPIO::Pin cspin, int frequency) : Radio(bus, cspin, frequency) {}
+        SE8R01(const ::SPI::Bus* bus, GPIO::Pin cspin, int frequency)
+            : Radio(bus, cspin, frequency) { init(); }
         SE8R01(const ::SPI::Bus* bus, GPIO::Pin cspin, int frequency,
                void (*receivedHandler)(int pipe, uint8_t* packet, int length),
                void (*transmittedHandler)(bool success, int retransmissions))
-            : Radio(bus, cspin, frequency, receivedHandler, transmittedHandler) {}
+            : Radio(bus, cspin, frequency, receivedHandler, transmittedHandler) { init(); }
 
+        void switchBank();
+        void init();
         void configure(Configuration* config);
         SPI::Status handleIRQ();
+
+    private:
+        static const uint8_t initSequence[];
     };
 
 }
