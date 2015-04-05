@@ -7,3 +7,5 @@ artnetnode/flexperiment/mini/f205/ram
 artnetnode/flexperiment/mini/f205/flash
 dmxfixture/flexperiment/nano/pwm
 dmxfixture/flexperiment/nano/tm1829
+nrftest/tx
+nrftest/rx
