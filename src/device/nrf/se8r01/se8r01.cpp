@@ -18,7 +18,7 @@ enum EntryType
 
 const uint8_t NRF::SE8R01::initSequence[] =
 {
-    Reg_Config | (Len_1 << 5), 0x03,
+    Reg_Config | (Len_1 << 5), 0x01,
     Reg_RfChannel | (Len_1 << 5), 0x32,
     Reg_RfSetup | (Len_1 << 5), 0x48,
     Reg_GuardCtl | (Len_1 << 5), 0x77,
@@ -31,7 +31,15 @@ const uint8_t NRF::SE8R01::initSequence[] =
     IntReg_AgcGain | (Len_4 << 5), 0x02, 0xc1, 0xeb, 0x1c,
     IntReg_RfIvGen | (Len_4 << 5), 0x97, 0x64, 0x00, 0x81,
     (SwitchBank << 5),
-    (Delay << 5) | 20,
+    Reg_Config | (Len_1 << 5), 0x03,
+    (Delay << 5) | 15,
+    Reg_Config | (Len_1 << 5), 0x01,
+    (Delay << 5) | 25,
+    Reg_Config | (Len_1 << 5), 0x03,
+    (Delay << 5) | 15,
+    Reg_Config | (Len_1 << 5), 0x01,
+    (Delay << 5) | 25,
+    Reg_Config | (Len_1 << 5), 0x03,
     Reg_Tuning | (Len_5 << 5), 0x28, 0x32, 0x80, 0x90, 0x00,
     (Delay << 5) | 1,
     (SwitchBank << 5),
@@ -58,7 +66,7 @@ void NRF::SE8R01::init()
     const uint8_t* ptr = initSequence;
     while (uint8_t cmd = *ptr++)
     {
-        if ((cmd >> 5) == Delay) udelay(8 * (cmd & 0x1f));
+        if ((cmd >> 5) == Delay) udelay(2 * (cmd & 0x1f));
         else if ((cmd >> 5) == SwitchBank) switchBank();
         else
         {
