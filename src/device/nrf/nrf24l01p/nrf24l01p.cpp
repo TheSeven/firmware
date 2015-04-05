@@ -29,21 +29,26 @@ void NRF::NRF24L01P::configure(Configuration* config)
 NRF::SPI::Status NRF::NRF24L01P::handleIRQ()
 {
     Status status = getStatus();
+    Status result = status;
     uint8_t length = 0;
     uint8_t data[32];
     TxObserve txObserve;
-    if (status.b.dataReceived)
-    {
-        getRxPacketSize(&length);
-        readPacket(data, length);
-    }
     if (packetTransmitted && (status.b.maxRetrans || status.b.dataSent))
-        readReg(Reg_TxObserve, &txObserve, sizeof(txObserve));
+        result = readReg(Reg_TxObserve, &txObserve, sizeof(txObserve));
     if (status.b.maxRetrans || status.b.dataSent || status.b.dataReceived)
-        status = writeReg(Reg_Status, &status, sizeof(status));
-    if (packetReceived && status.b.dataReceived)
-        packetReceived(status.b.rxPipe, data, length);
+        result = writeReg(Reg_Status, &status, sizeof(status));
+    if (status.b.dataReceived)
+        do
+        {
+            FifoStatus fifoStatus;
+            result = readReg(Reg_FifoStatus, &fifoStatus, sizeof(fifoStatus));
+            if (fifoStatus.b.rxEmpty) break;
+            getRxPacketSize(&length);
+            readPacket(data, length);
+            if (packetReceived) packetReceived(status.b.rxPipe, data, length);
+        }
+        while (true);
     if (packetTransmitted && (status.b.maxRetrans || status.b.dataSent))
         packetTransmitted(!status.b.maxRetrans, txObserve.b.retransCount);
-    return status;
+    return result;
 }
