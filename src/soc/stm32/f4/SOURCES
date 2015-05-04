@@ -7,6 +7,10 @@
 ../f2/sdio.cpp
 #endif
 
+#ifdef STM32_ENABLE_USB
+../f2/usb.cpp
+#endif
+
 #ifdef STM32_ENABLE_ETHERNET
 ../f1/ethmac.cpp
 #endif

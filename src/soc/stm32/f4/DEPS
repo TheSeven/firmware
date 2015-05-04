@@ -1,2 +1,8 @@
+#include "global.h"
+
 ..
 ../../../cpu/arm/cortexm/m4
+
+#ifdef STM32_ENABLE_USB
+../../../core/dwotg
+#endif

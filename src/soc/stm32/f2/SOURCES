@@ -7,6 +7,10 @@ serialnum.cpp
 sdio.cpp
 #endif
 
+#ifdef STM32_ENABLE_USB
+usb.cpp
+#endif
+
 #ifdef STM32_ENABLE_ETHERNET
 ../f1/ethmac.cpp
 #endif
