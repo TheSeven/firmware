@@ -70,11 +70,15 @@ __aeabi_lmul:
 .global __aeabi_uidiv
 .type __aeabi_uidivmod, %function
 .type __aeabi_uidiv, %function
+__aeabi_uidivmod_div0:
+    ldr r3, =__aeabi_idiv0
+    bx  r3
+    .ltorg
 __aeabi_uidivmod:
 __aeabi_uidiv:
     cmp r1, #0
     bne 1f
-    ldr r3, =__aeabi_idiv0
+    ldr r3, =__aeabi_uidivmod_div0
     mov pc, r3
 1:
     movs r2, #1
@@ -158,11 +162,15 @@ __aeabi_idiv:
 .section .text.__aeabi_uldivmod,"ax",%progbits
 .global __aeabi_uldivmod
 .type __aeabi_uldivmod, %function
+__aeabi_uldivmod_div0:
+    ldr r3, =__aeabi_ldiv0
+    bx  r3
+    .ltorg
 __aeabi_uldivmod:
     cmp r3, #0
     bne 4f
     cmp r2, #0
-    beq __aeabi_ldiv0
+    beq __aeabi_uldivmod_div0
     cmp r1, #0
     beq 3f
     push {r4, r5, r6, r7, lr}
