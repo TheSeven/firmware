@@ -30,6 +30,7 @@ uint16_t rtcFrequency;
 int16_t rtcDeviation;
 uint16_t lastTime;
 int timeOffset;
+uint8_t sensorCount;
 
 #ifdef HAVE_LCD
 #include "device/pcd8544/pcd8544.h"
@@ -165,7 +166,6 @@ struct Config
 {
     uint16_t interval;
     uint16_t buffer;
-    uint8_t sensors;
     uint8_t resolution;
 } config;
 
@@ -233,8 +233,18 @@ void __attribute__((noreturn)) error(uint32_t number)
     lcd.printf(2, 0, font, 0xff, "*** ERROR ***");
     int col = lcd.printf(3, 0, font, 0, errmsg[number > ARRAYLEN(errmsg) ? 0 : number], number);
     while (col < 84) col = lcd.printf(3, col, font, 0, " ");
-#endif
-
+    union STM32_RCC_REG_TYPE::BDCR BDCR = { 0 };
+    BDCR.b.BDRST = true;
+    STM32_RCC_REGS.BDCR.d32 = BDCR.d32;
+    union STM32_RCC_REG_TYPE::CSR CSR = { 0 };
+    STM32_RCC_REGS.CSR.d32 = CSR.d32;
+    while (true)
+    {
+        enter_critical_section();
+        SCB->SCR = SCB_SCR_SLEEPDEEP_Msk;
+        idle();
+    }
+#else
     int interval = 5000000;
     while (true)
     {
@@ -253,6 +263,7 @@ void __attribute__((noreturn)) error(uint32_t number)
         int timeout = TIMEOUT_SETUP(interval);
         while (!TIMEOUT_EXPIRED(timeout)) idle();
     }
+#endif
 }
 
 
@@ -310,16 +321,20 @@ bool readInt(FatFs::File* file, int* data, char delim)
 
 void readConfig()
 {
+    memset(&config, 0, sizeof(config));
+    config.interval = 3;
+    config.buffer = MAX_BUFFER;
+    config.resolution = 12;
     FatFs::FileMode mode = { 0 };
     mode.read = true;
     FRESULT result;
     FatFs::File file("/config.txt", mode, &result);
-    if (result != FR_OK) error(3);
-
-    memset(&config, 0, sizeof(config));
-    config.interval = 60;
-    config.buffer = MAX_BUFFER;
-    config.resolution = 12;
+    if (result != FR_OK)
+    {
+        lcd.printf(3, 0, font, 0, "No config file");
+        lcd.printf(4, 0, font, 0, "Assuming defaults");
+        return;
+    }
     while (!file.eof())
     {
         char tag[10];
@@ -330,10 +345,8 @@ void readConfig()
         if (!readInt(&file, &data, '\n')) continue;
         if (taglen == 8 && !memcmp(tag, "interval", 8)) config.interval = MAX(1, data);
         else if (taglen == 6 && !memcmp(tag, "buffer", 6)) config.buffer = MAX(1, MIN(MAX_BUFFER, data));
-        else if (taglen == 7 && !memcmp(tag, "sensors", 7)) config.sensors = data;
         else if (taglen == 10 && !memcmp(tag, "resolution", 10)) config.resolution = data;
     }
-    if (!config.sensors > MAX_SENSORS) error(4);
 }
 
 
@@ -366,7 +379,7 @@ void hexdump(FatFs::File* file, const void* data, int len)
 
 void printNumber(FatFs::File* file, int32_t number)
 {
-    if (file->printf("%.3D", number) <= 0) error(7);
+    if (file->printf(";%.3D", number) <= 0) error(7);
 }
 
 
@@ -407,7 +420,7 @@ void openLogFile(FatFs::File* file)
         "\nTime"
     );
     char sensorNum[] = ";Sensor00";
-    for (int i = 0; i < config.sensors; i++)
+    for (int i = 0; i < sensorCount; i++)
     {
         sensorNum[7] = '0' + i / 10;
         sensorNum[8] = '0' + i % 10;
@@ -416,13 +429,13 @@ void openLogFile(FatFs::File* file)
     safePuts(file, ";ChipTemp;Battery;System;RTCFreq;RTCDev\n");
 
     hexdump(file, (void*)0x1ffff7ac, 12);
-    for (int i = 0; i < config.sensors; i++)
+    for (int i = 0; i < sensorCount; i++)
     {
         safePutc(file, ';');
         hexdump(file, sensor[i].getDeviceId(), 8);
     }
     safePuts(file, "\ns");
-    for (int i = 0; i < config.sensors; i++) safePuts(file, ";°C");
+    for (int i = 0; i < sensorCount; i++) safePuts(file, ";°C");
     safePuts(file, ";°C;V;V;Hz;ppm\n\n");
 }
 
@@ -613,14 +626,6 @@ void __attribute__((noreturn)) startLogging()
     openLogFile(&file);
 
     readVoltages(dataBuffer);
-    int level = MAX(1, (dataBuffer->batteryVoltage - 2000) / 200);
-    for (int i = 0; i < level; i++)
-    {
-        GPIO::setLevel(PIN_LED, true);
-        udelay(50000);
-        GPIO::setLevel(PIN_LED, false);
-        udelay(300000);
-    }
 
     initRTC();
 
@@ -640,12 +645,12 @@ void __attribute__((noreturn)) startLogging()
         dataBuffer[ptr].time = now;
         readVoltages(dataBuffer + ptr);
         bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(PIN_SENSOR.pin >> 4), true);
-        for (int i = 0; i < config.sensors; i++)
+        for (int i = 0; i < sensorCount; i++)
             dataBuffer[ptr].sensor[i] = sensor[i].readRawTemperature();
         clockgate_enable(STM32_GPIO_CLOCKGATE(PIN_SENSOR.pin >> 4), old);
 #ifdef HAVE_LCD
         printTempLCD(0, 'C', dataBuffer[ptr].chipTemp * 10);
-        for (int i = 0; i < MIN(5, config.sensors); i++)
+        for (int i = 0; i < MIN(5, sensorCount); i++)
             printTempLCD(i + 1, '0' + i, sensor[i].scaleRawTemperature(dataBuffer[ptr].sensor[i]));
         printVoltLCD(0, 'B', dataBuffer[ptr].batteryVoltage);
         printVoltLCD(1, 'S', dataBuffer[ptr].systemVoltage);
@@ -661,16 +666,10 @@ void __attribute__((noreturn)) startLogging()
             for (int i = 0; i < ptr; i++)
             {
                 if (file.printf("%d", dataBuffer[i].time) <= 0) error(7);
-                for (int j = 0; j < config.sensors; j++)
-                {
-                    safePutc(&file, ';');
+                for (int j = 0; j < sensorCount; j++)
                     printNumber(&file, sensor[j].scaleRawTemperature(dataBuffer[i].sensor[j]));
-                }
-                safePutc(&file, ';');
                 printNumber(&file, dataBuffer[i].chipTemp * 10);
-                safePutc(&file, ';');
                 printNumber(&file, dataBuffer[i].batteryVoltage);
-                safePutc(&file, ';');
                 printNumber(&file, dataBuffer[i].systemVoltage);
                 if (i == ptr - 1)
                 {
@@ -693,15 +692,18 @@ void initSensors()
 {
     bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(PIN_SENSOR.pin >> 4), true);
 
-    for (int i = 0; i < config.sensors; i++)
+    for (sensorCount = 0; sensorCount < MAX_SENSORS; sensorCount++)
     {
         uint64_t* deviceId = onewire.discoverDevice();
-        if (!deviceId) error(5);
-        new(&sensor[i]) DS1820(&onewire, *deviceId);
-        sensor[i].setResolution(config.resolution);
+        if (!deviceId) break;
+        new(&sensor[sensorCount]) DS1820(&onewire, *deviceId);
+        sensor[sensorCount].setResolution(config.resolution);
     }
+#ifdef HAVE_LCD
+    lcd.printf(5, 0, font, 0, "%d ext. sensor(s)", sensorCount);
+#endif
 
-    for (int i = 0; i < config.sensors; i++) sensor[i].readRawTemperature();
+    for (int i = 0; i < sensorCount; i++) sensor[i].readRawTemperature();
     clockgate_enable(STM32_GPIO_CLOCKGATE(PIN_SENSOR.pin >> 4), old);
 }
 
@@ -709,8 +711,8 @@ void initSensors()
 int main()
 {
 #ifdef HAVE_LCD
-    lcd.printf(0, 0, font, 0, "nanologger " VERSION " by");
-    lcd.printf(1, 0, font, 0, "Michael Sparmann");
+    lcd.printf(0, 0, font, 0, "nanologger v" VERSION);
+    lcd.printf(1, 0, font, 0, "by M. Sparmann");
 #endif
 
     clockgate_enable(STM32_PWR_CLOCKGATE, true);
@@ -729,6 +731,7 @@ int main()
     readConfig();
 
     initSensors();
+    udelay(3000000);
 
     startLogging();
 }

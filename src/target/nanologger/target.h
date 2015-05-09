@@ -22,7 +22,7 @@
     ), \
 }
 
-#define VERSION "0.1"
+#define VERSION "0.1.1"
 
 #define SD_FREQ 25000000
 
