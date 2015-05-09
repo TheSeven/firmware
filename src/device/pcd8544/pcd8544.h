@@ -21,7 +21,7 @@ public:
     int print(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, const char* text);
     int printf(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, const char* format, ...);
     int blit(int row, int col, const uint8_t* data, int len);
-    const Fonts::Prop8::Font* defaultFont = Fonts::Prop8::small;
+    static constexpr const Fonts::Prop8::Font* defaultFont = &Fonts::Prop8::small[0];
 
 private:
     struct PrintfState
