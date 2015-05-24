@@ -84,4 +84,37 @@ public:
         return store.save();
     }
 
+    Storage::Result FLASHPARTITION_OPTIMIZE createMaxPartition(uint64_t name, uint32_t minSize)
+    {
+        PartitionDescriptor* descriptor = findPartition(name);
+        if (descriptor) return Storage::RESULT_INVALID_ARGUMENT;
+        descriptor = findPartition(0);
+        if (!descriptor) return Storage::RESULT_UNKNOWN_ERROR;
+        uint32_t end = superblock.offset / MAX(storage->programSize, storage->eraseSize);
+        uint32_t maxSize = 0;
+        uint32_t maxEnd = end;
+        while (end > maxSize)
+        {
+            uint32_t size = end;
+            uint32_t nextEnd = 0;
+            for (int i = 0; i < ARRAYLEN(partTable.data); i++)
+                if (partTable.data[i].offset < end && partTable.data[i].offset + partTable.data[i].size > end - size)
+                {
+                    size = end - partTable.data[i].offset - partTable.data[i].size;
+                    nextEnd = partTable.data[i].offset;
+                }
+            if (size > maxSize)
+            {
+                maxSize = size;
+                maxEnd = end;
+            }
+            end = nextEnd;
+        }
+        if (maxSize < minSize) return Storage::RESULT_UNKNOWN_ERROR;
+        descriptor->name = name;
+        descriptor->offset = maxEnd - maxSize;
+        descriptor->size = maxSize;
+        return store.save();
+    }
+
 };
