@@ -22,7 +22,7 @@
     #error STM32 APB bus frequencies must match on this device!
 #endif
 
-#if defined(STM32_CLOCKSOURCE_HSE) && !defined(STM32_CLOCKSOURCE_HSI)
+#if defined(STM32_CLOCKSOURCE_HSE) && !defined(STM32_CLOCKSOURCE_HSI) && !defined(STM32_CLOCKSOURCE_HSI48)
     #if (STM32_HSE_FREQUENCY) < 4000000
         #error STM32 HSE input frequency is too low! Minimum is 4000000Hz.
     #elif (STM32_HSE_FREQUENCY) > 32000000
@@ -34,10 +34,19 @@
     #define STM32_PLL_BYPASS CFGR.b.SW_HSE
     #define STM32_PLL_SOURCE CFGR.b.PLLSRC_HSE_PREDIV
     #define STM32_PLL_SOURCE_FREQUENCY STM32_HSE_FREQUENCY
-#elif !defined(STM32_CLOCKSOURCE_HSE) && defined(STM32_CLOCKSOURCE_HSI)
+#elif !defined(STM32_CLOCKSOURCE_HSE) && defined(STM32_CLOCKSOURCE_HSI) && !defined(STM32_CLOCKSOURCE_HSI48)
     #define STM32_PLL_BYPASS CFGR.b.SW_HSI
-    #define STM32_PLL_SOURCE CFGR.b.PLLSRC_HSI_DIV2
-    #define STM32_PLL_SOURCE_FREQUENCY ((STM32_HSI_FREQUENCY)/2)
+    #if defined(SOC_STM32F030) && !defined(SOC_STM32F0XXXC)
+        #define STM32_PLL_SOURCE CFGR.b.PLLSRC_HSI_DIV2
+        #define STM32_PLL_SOURCE_FREQUENCY ((STM32_HSI_FREQUENCY)/2)
+    #else
+        #define STM32_PLL_SOURCE CFGR.b.PLLSRC_HSI_PREDIV
+        #define STM32_PLL_SOURCE_FREQUENCY STM32_HSI_FREQUENCY
+    #endif
+#elif !defined(STM32_CLOCKSOURCE_HSE) && !defined(STM32_CLOCKSOURCE_HSI) && defined(STM32_CLOCKSOURCE_HSI48)
+    #define STM32_PLL_BYPASS CFGR.b.SW_HSI48
+    #define STM32_PLL_SOURCE CFGR.b.PLLSRC_HSI48_PREDIV
+    #define STM32_PLL_SOURCE_FREQUENCY STM32_HSI48_FREQUENCY
 #else
 #error Invalid STM32 clock source configuration!
 #endif
@@ -53,21 +62,29 @@
             #error STM32 system clock does not match internal oscillator clock, and PLL is disabled
         #endif
     #endif
+    #ifdef STM32_CLOCKSOURCE_HSI48
+        #if STM32_SYS_CLOCK != STM32_HSI48_FREQUENCY
+            #error STM32 system clock does not match internal oscillator clock, and PLL is disabled
+        #endif
+    #endif
     #define STM32_SYS_SOURCE STM32_PLL_BYPASS
 #else
     #define STM32_SYS_SOURCE CFGR.b.SW_PLL
 
-#if (STM32_PLL_SOURCE_FREQUENCY) < 1000000
+    #ifndef STM32_PLLIN_CLOCK
+        #define STM32_PLLIN_CLOCK 4000000
+    #endif
+    #if (STM32_PLLIN_CLOCK) < 1000000
         #error STM32 PLL input frequency is too low! Minimum is 1000000Hz.
-    #elif (STM32_PLL_SOURCE_FREQUENCY) > 24000000
+    #elif (STM32_PLLIN_CLOCK) > 24000000
         #error STM32 PLL input frequency is too high! Maximum is 24000000Hz.
     #endif
-    #ifdef STM32_CLOCKSOURCE_HSI
+    #if defined(STM32_CLOCKSOURCE_HSI) && defined(SOC_STM32F030) && !defined(SOC_STM32F0XXXC)
         #define STM32_PLLIN_DIVIDER 1
     #else
-        #define STM32_PLLIN_DIVIDER ((STM32_PLL_SOURCE_FREQUENCY) / (STM32_PLL_SOURCE_FREQUENCY))
+        #define STM32_PLLIN_DIVIDER ((STM32_PLL_SOURCE_FREQUENCY) / (STM32_PLLIN_CLOCK))
     #endif
-    #if (STM32_PLL_SOURCE_FREQUENCY) * (STM32_PLLIN_DIVIDER) != (STM32_PLL_SOURCE_FREQUENCY)
+    #if (STM32_PLLIN_CLOCK) * (STM32_PLLIN_DIVIDER) != (STM32_PLL_SOURCE_FREQUENCY)
         #error Can not derive the specified PLL input clock from the specified STM32 input clock!
     #endif
 
@@ -76,8 +93,8 @@
     #elif (STM32_SYS_CLOCK) > 48000000
         #error STM32 PLL output frequency is too high! Maximum is 48000000Hz.
     #endif
-    #define STM32_PLL_MULTIPLIER ((STM32_SYS_CLOCK) / (STM32_PLL_SOURCE_FREQUENCY))
-    #if (STM32_PLL_SOURCE_FREQUENCY) * (STM32_PLL_MULTIPLIER) != (STM32_SYS_CLOCK)
+    #define STM32_PLL_MULTIPLIER ((STM32_SYS_CLOCK) / (STM32_PLLIN_CLOCK))
+    #if (STM32_PLLIN_CLOCK) * (STM32_PLL_MULTIPLIER) != (STM32_SYS_CLOCK)
         #error Can not find a PLL multiplication factor for the specified PLL output frequency!
     #endif
     #if (STM32_PLL_MULTIPLIER) < 2
@@ -147,10 +164,22 @@ namespace STM32
         STM32_RCC_REGS.CLKGATES.r.APB2ENR.d32 = APB2ENR.d32;
         union STM32_RCC_REG_TYPE::CLKGATES::REG::APB1ENR APB1ENR = { 0 };
         STM32_RCC_REGS.CLKGATES.r.APB1ENR.d32 = APB1ENR.d32;
-        
-        // Switch to HSI so that we can configure the PLLs
-        STM32_RCC_REGS.CR.b.HSION = true;
         union STM32_RCC_REG_TYPE::CFGR CFGR = { 0 };
+
+        // Start up HSI
+        STM32_RCC_REGS.CR.b.HSION = true;
+        
+        // Shut down HSI14 and HSI48 (or start the latter if we want to use it as our clock source)
+        union STM32_RCC_REG_TYPE::CR2 CR2 = { STM32_RCC_REGS.CR2.d32 };
+        CR2.b.HSI14ON = false;
+#ifdef STM32_CLOCKSOURCE_HSI48
+        CR2.b.HSI48ON = true;
+#else
+        CR2.b.HSI48ON = false;
+#endif
+        STM32_RCC_REGS.CR2.d32 = CR2.d32;
+
+        // Switch to HSI so that we can shutdown and reconfigure everything else
         CFGR.b.SW = CFGR.b.SW_HSI;
         STM32_RCC_REGS.CFGR.d32 = CFGR.d32;
         while (STM32_RCC_REGS.CFGR.b.SWS != CFGR.b.SWS_HSI);
@@ -184,7 +213,7 @@ namespace STM32
         STM32_RCC_REGS.CR.b.PLLON = true;
 #endif
 
-        // Initialize power management while the PLL is locking
+        // Initialize power management while the PLL is locking or HSI48 is starting up
         PWR::init();
         
         // Set flash wait states for higher clock frequency
@@ -212,11 +241,14 @@ namespace STM32
         {
             case STM32_RCC_REGS.CFGR.b.SW_HSI: return STM32_HSI_FREQUENCY;
             case STM32_RCC_REGS.CFGR.b.SW_HSE: return STM32_HSE_FREQUENCY;
+            case STM32_RCC_REGS.CFGR.b.SW_HSI48: return STM32_HSI48_FREQUENCY;
             case STM32_RCC_REGS.CFGR.b.SW_PLL:
                 switch (CFGR.b.PLLSRC)
                 {
-                    case CFGR.b.PLLSRC_HSI: baseclock = STM32_HSI_FREQUENCY / 2; break;
-                    case CFGR.b.PLLSRC_HSE: baseclock = STM32_HSE_FREQUENCY / (STM32_RCC_REGS.CFGR2.b.PREDIV + 1); break;
+                    case CFGR.b.PLLSRC_HSI_DIV2: baseclock = STM32_HSI_FREQUENCY / 2; break;
+                    case CFGR.b.PLLSRC_HSI_PREDIV: baseclock = STM32_HSI_FREQUENCY / (STM32_RCC_REGS.CFGR2.b.PREDIV + 1); break;
+                    case CFGR.b.PLLSRC_HSE_PREDIV: baseclock = STM32_HSE_FREQUENCY / (STM32_RCC_REGS.CFGR2.b.PREDIV + 1); break;
+                    case CFGR.b.PLLSRC_HSI48_PREDIV: baseclock = STM32_HSI48_FREQUENCY / (STM32_RCC_REGS.CFGR2.b.PREDIV + 1); break;
                 }
                 return baseclock * MIN(CFGR.b.PLLMUL + 2, 16);
             default: return 0;
@@ -322,6 +354,9 @@ namespace STM32
                 STM32_RCC_REGS.CR.b.HSEON = false;
                 STM32_RCC_REGS.CR.b.HSEBYP = bypass;
                 STM32_RCC_REGS.CR.b.HSEON = on;
+                break;
+            case HSI48:
+                STM32_RCC_REGS.CR2.b.HSION = on;
                 break;
             case LSI:
                 STM32_RCC_REGS.CSR.b.LSION = on;

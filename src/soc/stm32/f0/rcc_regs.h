@@ -32,12 +32,14 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 SW_HSI = 0x0,
                 SW_HSE = 0x1,
                 SW_PLL = 0x2,
+                SW_HSI48 = 0x3,
             } SW : 2;
             enum
             {
                 SWS_HSI = 0x0,
                 SWS_HSE = 0x1,
                 SWS_PLL = 0x2,
+                SWS_HSI48 = 0x3,
             } SWS : 2;
             enum
             {
@@ -65,12 +67,13 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 ADCPRE_DIV2 = 0x0,
                 ADCPRE_DIV4 = 0x1,
             } ADCPRE : 1;
-            uint32_t : 1;
             enum
             {
                 PLLSRC_HSI_DIV2 = 0x0,
-                PLLSRC_HSE_PREDIV = 0x1,
-            } PLLSRC : 1;
+                PLLSRC_HSI_PREDIV = 0x1,
+                PLLSRC_HSE_PREDIV = 0x2,
+                PLLSRC_HSI48_PREDIV = 0x3,
+            } PLLSRC : 2;
             enum
             {
                 PLLXTPRE_PREDIV_DIV1 = 0x0,
@@ -88,6 +91,7 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 MCO_HSI = 0x5,
                 MCO_HSE = 0x6,
                 MCO_PLL = 0x7,
+                MCO_HSI48 = 0x8,
             } MCO : 4;
             enum MCOPRE
             {
@@ -114,7 +118,7 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
             uint32_t HSERDYF : 1;
             uint32_t PLLRDYF : 1;
             uint32_t HSI14RDYF : 1;
-            uint32_t : 1;
+            uint32_t HSI48RDYF : 1;
             uint32_t CSSF : 1;
             uint32_t LSIRDYIE : 1;
             uint32_t LSERDYIE : 1;
@@ -122,14 +126,15 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
             uint32_t HSERDYIE : 1;
             uint32_t PLLRDYIE : 1;
             uint32_t HSI14RDYIE : 1;
-            uint32_t : 2;
+            uint32_t HSI48RDYIE : 1;
+            uint32_t : 1;
             uint32_t LSIRDYC : 1;
             uint32_t LSERDYC : 1;
             uint32_t HSIRDYC : 1;
             uint32_t HSERDYC : 1;
             uint32_t PLLRDYC : 1;
             uint32_t HSI14RDYC : 1;
-            uint32_t : 1;
+            uint32_t HSI48RDYC: 1;
             uint32_t CSSC : 1;
             uint32_t : 8;
         } b;
@@ -145,7 +150,11 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 struct __attribute__((packed))
                 {
                     uint32_t SYSCFGRST : 1;
-                    uint32_t : 8;
+                    uint32_t : 4;
+                    uint32_t USART6RST : 1;
+                    uint32_t USART7RST : 1;
+                    uint32_t USART8RST : 1;
+                    uint32_t : 1;
                     uint32_t ADCRST : 1;
                     uint32_t : 1;
                     uint32_t TIM1RST : 1;
@@ -166,11 +175,12 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 uint32_t d32;
                 struct __attribute__((packed))
                 {
-                    uint32_t : 1;
+                    uint32_t TIM2RST : 1;
                     uint32_t TIM3RST : 1;
                     uint32_t : 2;
                     uint32_t TIM6RST : 1;
-                    uint32_t : 3;
+                    uint32_t TIM7RST : 1;
+                    uint32_t : 2;
                     uint32_t TIM14RST : 1;
                     uint32_t : 2;
                     uint32_t WWDGRST : 1;
@@ -178,12 +188,20 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                     uint32_t SPI2RST : 1;
                     uint32_t : 2;
                     uint32_t USART2RST : 1;
-                    uint32_t : 3;
+                    uint32_t USART3RST : 1;
+                    uint32_t USART4RST : 1;
+                    uint32_t USART5RST : 1;
                     uint32_t I2C1RST : 1;
                     uint32_t I2C2RST : 1;
-                    uint32_t : 5;
+                    uint32_t USBRST : 1;
+                    uint32_t : 1;
+                    uint32_t CANRST : 1;
+                    uint32_t : 1;
+                    uint32_t CRSRST : 1;
                     uint32_t PWRRST : 1;
-                    uint32_t : 3;
+                    uint32_t DACRST : 1;
+                    uint32_t CECRST : 1;
+                    uint32_t : 1;
                 } b;
             } APB1RSTR;
         } r;
@@ -199,7 +217,7 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 struct __attribute__((packed))
                 {
                     uint32_t DMAEN : 1;
-                    uint32_t : 1;
+                    uint32_t DMA2EN : 1;
                     uint32_t SRAMEN : 1;
                     uint32_t : 1;
                     uint32_t FLITFEN : 1;
@@ -210,9 +228,11 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                     uint32_t GPIOBEN : 1;
                     uint32_t GPIOCEN : 1;
                     uint32_t GPIODEN : 1;
-                    uint32_t : 1;
+                    uint32_t GPIOEEN : 1;
                     uint32_t GPIOFEN : 1;
-                    uint32_t : 9;
+                    uint32_t : 1;
+                    uint32_t TSCEN : 1;
+                    uint32_t : 7;
                 } b;
             } AHBENR;
             union APB2ENR
@@ -221,7 +241,11 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 struct __attribute__((packed))
                 {
                     uint32_t SYSCFGEN : 1;
-                    uint32_t : 8;
+                    uint32_t : 4;
+                    uint32_t USART6EN : 1;
+                    uint32_t USART7EN : 1;
+                    uint32_t USART8EN : 1;
+                    uint32_t : 1;
                     uint32_t ADCEN : 1;
                     uint32_t : 1;
                     uint32_t TIM1EN : 1;
@@ -242,11 +266,12 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 uint32_t d32;
                 struct __attribute__((packed))
                 {
-                    uint32_t : 1;
+                    uint32_t TIM2EN : 1;
                     uint32_t TIM3EN: 1;
                     uint32_t : 2;
                     uint32_t TIM6EN : 1;
-                    uint32_t : 3;
+                    uint32_t TIM7EN : 1;
+                    uint32_t : 2;
                     uint32_t TIM14EN : 1;
                     uint32_t : 2;
                     uint32_t WWDGEN : 1;
@@ -254,12 +279,20 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                     uint32_t SPI2EN : 1;
                     uint32_t : 2;
                     uint32_t USART2EN : 1;
-                    uint32_t : 3;
+                    uint32_t USART3EN : 1;
+                    uint32_t USART4EN : 1;
+                    uint32_t USART5EN : 1;
                     uint32_t I2C1EN : 1;
                     uint32_t I2C2EN : 1;
-                    uint32_t : 5;
+                    uint32_t USBEN : 1;
+                    uint32_t : 1;
+                    uint32_t CANEN : 1;
+                    uint32_t : 1;
+                    uint32_t CRSEN : 1;
                     uint32_t PWREN : 1;
-                    uint32_t : 3;
+                    uint32_t DACEN : 1;
+                    uint32_t CECEN : 1;
+                    uint32_t : 1;
                 } b;
             } APB1ENR;
         } r;
@@ -316,9 +349,11 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
             uint32_t GPIOBRST : 1;
             uint32_t GPIOCRST : 1;
             uint32_t GPIODRST : 1;
-            uint32_t : 1;
+            uint32_t GPIOERST : 1;
             uint32_t GPIOFRST : 1;
-            uint32_t : 9;
+            uint32_t : 1;
+            uint32_t TSCRST : 1;
+            uint32_t : 7;
         } b;
     } AHBRSTR;
     union CFGR2
@@ -348,7 +383,23 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 I2C1SW_HSI = 0x0,
                 I2C1SW_SYSCLK = 0x1,
             } I2C1SW : 1;
-            uint32_t : 11;
+            uint32_t : 1;
+            enum CECSW
+            {
+                CECSW_HSI_DIV244 = 0x0,
+                CECSW_LSE = 0x1,
+            } CECSW : 1;
+            enum USBSW
+            {
+                USBSW_HSI48 = 0x0,
+                USBSW_PLLCLK = 0x1,
+            } USBSW : 1;
+            enum ADCSW
+            {
+                ADCSW_HSI14 = 0x0,
+                ADCSW_SYSCLK_DIV = 0x1,
+            } ADCSW : 1;
+            uint32_t : 7;
             enum USART2SW
             {
                 USART2SW_PCLK = 0x0,
@@ -356,7 +407,14 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
                 USART2SW_LSE = 0x2,
                 USART2SW_HSI = 0x3,
             } USART2SW : 2;
-            uint32_t : 14;
+            enum USART3SW
+            {
+                USART3SW_PCLK = 0x0,
+                USART3SW_SYSCLK = 0x1,
+                USART3SW_LSE = 0x2,
+                USART3SW_HSI = 0x3,
+            } USART3SW : 2;
+            uint32_t : 12;
         } b;
     } CFGR3;
     union CR2
@@ -369,7 +427,10 @@ struct __attribute__((packed)) STM32_RCC_REG_TYPE
             uint32_t HSI14DIS : 1;
             uint32_t HSI14TRIM : 5;
             uint32_t HSI14CAL : 8;
-            uint32_t : 16;
+            uint32_t HSI48ON : 1;
+            uint32_t HSI48RDY : 1;
+            uint32_t : 6;
+            uint32_t HSI48CAL : 8;
         } b;
     } CR2;
 };

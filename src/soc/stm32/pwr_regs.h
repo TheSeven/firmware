@@ -31,6 +31,22 @@ struct __attribute__((packed)) STM32_PWR_REG_TYPE
         uint32_t d32;
         struct __attribute__((packed))
         {
+#ifdef SOC_STM32F0
+            uint32_t WUF : 1;
+            uint32_t SBF : 1;
+            uint32_t PVDO : 1;
+            uint32_t VREFINTRDY : 1;
+            uint32_t : 4;
+            uint32_t EWUP1 : 1;
+            uint32_t EWUP2 : 1;
+            uint32_t EWUP3 : 1;
+            uint32_t EWUP4 : 1;
+            uint32_t EWUP5 : 1;
+            uint32_t EWUP6 : 1;
+            uint32_t EWUP7 : 1;
+            uint32_t EWUP8 : 1;
+            uint32_t : 16;
+#else
             uint32_t WUF : 1;
             uint32_t SBF : 1;
             uint32_t PVDO : 1;
@@ -45,6 +61,7 @@ struct __attribute__((packed)) STM32_PWR_REG_TYPE
             uint32_t ODSWRDY : 1;
             uint32_t UDSWRDY : 2;
             uint32_t : 12;
+#endif
         } b;
     } CSR;
 };

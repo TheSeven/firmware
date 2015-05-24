@@ -14,6 +14,7 @@ namespace STM32
             HSE = 1,
             LSI = 2,
             LSE = 3,
+            HSI48 = 4,
         };
         
         enum SysClockSource
@@ -21,12 +22,15 @@ namespace STM32
             SysClockHSI = 0,
             SysClockHSE = 1,
             SysClockPLL = 2,
+            SysClockHSI48 = 3,
         };
         
         enum PLLClockSource
         {
-            PLLClockHSI = 0,
-            PLLClockHSE = 1,
+            PLLClockHSIDiv2 = 0,
+            PLLClockHSI = 1,
+            PLLClockHSE = 2,
+            PLLClockHSI48 = 3,
         };
         
         static void init();
