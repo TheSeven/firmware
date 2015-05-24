@@ -4,6 +4,11 @@
 #include "interface/gpio/gpio.h"
 
 
+#ifndef ONEWIRE_OPTIMIZE
+#define ONEWIRE_OPTIMIZE
+#endif
+
+
 namespace OneWire
 {
 

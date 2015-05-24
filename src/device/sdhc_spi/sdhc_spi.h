@@ -5,6 +5,11 @@
 #include "interface/spi/spi.h"
 
 
+#ifndef SDHC_SPI_OPTIMIZE
+#define SDHC_SPI_OPTIMIZE
+#endif
+
+
 class __attribute__((packed,aligned(4))) SDHC_SPI final : SPI::Device, public Storage
 {
 public:

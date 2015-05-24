@@ -20,13 +20,13 @@ const struct SPIFlash::DeviceType SPIFlash::deviceTypes[] =
 #endif
 };
 
-SPIFlash::SPIFlash(const SPI::Bus* bus, GPIO::Pin cspin, int initSpeed, int maxSpeed)
+SPIFLASH_OPTIMIZE SPIFlash::SPIFlash(const SPI::Bus* bus, GPIO::Pin cspin, int initSpeed, int maxSpeed)
     : Device(bus, cspin, initSpeed), initSpeed(initSpeed), maxSpeed(maxSpeed)
 {
     reset();
 }
 
-bool SPIFlash::waitIdle()
+bool SPIFLASH_OPTIMIZE SPIFlash::waitIdle()
 {
     long timeout = TIMEOUT_SETUP(2000000);
     while (!TIMEOUT_EXPIRED(timeout))
@@ -40,7 +40,7 @@ bool SPIFlash::waitIdle()
     return false;
 }
 
-enum Storage::Result SPIFlash::reset()
+enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::reset()
 {
     initialized = false;
     frequency = initSpeed;
@@ -89,12 +89,12 @@ enum Storage::Result SPIFlash::reset()
     return RESULT_OK;
 }
 
-enum Storage::Result SPIFlash::getStatus()
+enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::getStatus()
 {
     return initialized ? RESULT_OK : RESULT_INVALID_STATE;
 }
 
-enum Storage::Result SPIFlash::read(uint32_t page, uint32_t len, void* buf)
+enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::read(uint32_t page, uint32_t len, void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
@@ -110,7 +110,7 @@ enum Storage::Result SPIFlash::read(uint32_t page, uint32_t len, void* buf)
     return RESULT_OK;
 }
 
-enum Storage::Result SPIFlash::write(uint32_t page, uint32_t len, const void* buf)
+enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::write(uint32_t page, uint32_t len, const void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
@@ -135,7 +135,7 @@ enum Storage::Result SPIFlash::write(uint32_t page, uint32_t len, const void* bu
     return RESULT_OK;
 }
 
-enum Storage::Result SPIFlash::erase(uint32_t page, uint32_t len)
+enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::erase(uint32_t page, uint32_t len)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;

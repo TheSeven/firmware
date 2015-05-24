@@ -4,6 +4,11 @@
 #include "sys/util.h"
 
 
+#ifndef STORAGEPARTITION_OPTIMIZE
+#define STORAGEPARTITION_OPTIMIZE
+#endif
+
+
 class __attribute__((packed,aligned(4))) Storage
 {
 protected:
@@ -44,36 +49,36 @@ public:
     Storage* storage;
     uint32_t offset;
 
-    constexpr StoragePartition() : Storage(), storage(NULL), offset(0) {}
+    constexpr STORAGEPARTITION_OPTIMIZE StoragePartition() : Storage(), storage(NULL), offset(0) {}
 
-    constexpr StoragePartition(Storage* storage, uint32_t offset, uint32_t size)
+    constexpr STORAGEPARTITION_OPTIMIZE StoragePartition(Storage* storage, uint32_t offset, uint32_t size)
         : Storage(size * MAX(storage->programSize, storage->eraseSize), storage->pageSize,
                   storage->eraseSize, storage->programSize),
           storage(storage), offset(MAX(storage->programSize, storage->eraseSize) * offset) {}
 
-    enum Result reset()
+    enum Result STORAGEPARTITION_OPTIMIZE reset()
     {
         return storage->reset();
     }
 
-    enum Result getStatus()
+    enum Result STORAGEPARTITION_OPTIMIZE getStatus()
     {
         return storage->getStatus();
     }
 
-    enum Result read(uint32_t page, uint32_t len, void* buf)
+    enum Result STORAGEPARTITION_OPTIMIZE read(uint32_t page, uint32_t len, void* buf)
     {
         if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
         return storage->read(page + offset, len, buf);
     }
 
-    enum Result write(uint32_t page, uint32_t len, const void* buf)
+    enum Result STORAGEPARTITION_OPTIMIZE write(uint32_t page, uint32_t len, const void* buf)
     {
         if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
         return storage->write(page + offset, len, buf);
     }
 
-    enum Result erase(uint32_t page, uint32_t len)
+    enum Result STORAGEPARTITION_OPTIMIZE erase(uint32_t page, uint32_t len)
     {
         if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
         return storage->erase(page + offset, len);

@@ -10,12 +10,12 @@ OneWire::Bus::Bus(GPIO::Pin pin) : pin(pin)
     resetDiscovery();
 }
 
-void OneWire::Bus::sleep() const
+void ONEWIRE_OPTIMIZE OneWire::Bus::sleep() const
 {
     GPIO::setPull(pin, GPIO::PULL_NONE);
 }
 
-bool __attribute__((weak)) OneWire::Bus::reset() const
+bool __attribute__((weak)) ONEWIRE_OPTIMIZE OneWire::Bus::reset() const
 {
     GPIO::setPull(pin, GPIO::PULL_UP);
     int time = TIMEOUT_SETUP(1000);
@@ -30,18 +30,18 @@ bool __attribute__((weak)) OneWire::Bus::reset() const
     return result;
 }
 
-void OneWire::Bus::select(uint64_t deviceId) const
+void ONEWIRE_OPTIMIZE OneWire::Bus::select(uint64_t deviceId) const
 {
     writeByte(0x55);
     writeBytes((uint8_t*)&deviceId, 8);
 }
 
-void OneWire::Bus::selectAll() const
+void ONEWIRE_OPTIMIZE OneWire::Bus::selectAll() const
 {
     writeByte(0xcc);
 }
 
-void __attribute__((weak)) OneWire::Bus::writeBit(bool bit) const
+void __attribute__((weak)) ONEWIRE_OPTIMIZE OneWire::Bus::writeBit(bool bit) const
 {
     int time = read_usec_timer();
     GPIO::setLevel(pin, false);
@@ -50,7 +50,7 @@ void __attribute__((weak)) OneWire::Bus::writeBit(bool bit) const
     delay(time + (bit ? 55 : 5));
 }
 
-void OneWire::Bus::writeByte(uint8_t byte) const
+void ONEWIRE_OPTIMIZE OneWire::Bus::writeByte(uint8_t byte) const
 {
     for (int i = 0; i < 8; i++)
     {
@@ -59,12 +59,12 @@ void OneWire::Bus::writeByte(uint8_t byte) const
     }
 }
 
-void OneWire::Bus::writeBytes(const uint8_t* data, int len) const
+void ONEWIRE_OPTIMIZE OneWire::Bus::writeBytes(const uint8_t* data, int len) const
 {
     while (len--) writeByte(*data++);
 }
 
-bool __attribute__((weak)) OneWire::Bus::readBit() const
+bool __attribute__((weak)) ONEWIRE_OPTIMIZE OneWire::Bus::readBit() const
 {
     int time = read_usec_timer();
     GPIO::setLevel(pin, false);
@@ -76,7 +76,7 @@ bool __attribute__((weak)) OneWire::Bus::readBit() const
     return result;
 }
 
-uint8_t OneWire::Bus::readByte() const
+uint8_t ONEWIRE_OPTIMIZE OneWire::Bus::readByte() const
 {
     uint8_t byte = 0;
     for (int i = 0; i < 8; i++)
@@ -87,29 +87,29 @@ uint8_t OneWire::Bus::readByte() const
     return byte;
 }
 
-void OneWire::Bus::readBytes(uint8_t* data, int len) const
+void ONEWIRE_OPTIMIZE OneWire::Bus::readBytes(uint8_t* data, int len) const
 {
     while (len--) *data++ = readByte();
 }
 
-void OneWire::Bus::turnOnPower() const
+void ONEWIRE_OPTIMIZE OneWire::Bus::turnOnPower() const
 {
     GPIO::setType(pin, GPIO::TYPE_PUSHPULL);
 }
 
-void OneWire::Bus::turnOffPower() const
+void ONEWIRE_OPTIMIZE OneWire::Bus::turnOffPower() const
 {
     GPIO::setType(pin, GPIO::TYPE_OPENDRAIN);
 }
 
-void OneWire::Bus::resetDiscovery()
+void ONEWIRE_OPTIMIZE OneWire::Bus::resetDiscovery()
 {
     lastDiscrepancy = 0;
     isLastDevice = false;
     scanDeviceId = 0;
 }
 
-uint64_t* OneWire::Bus::discoverDevice()
+uint64_t* ONEWIRE_OPTIMIZE OneWire::Bus::discoverDevice()
 {
     if (isLastDevice) return NULL;
     if (!reset()) return NULL;
@@ -138,7 +138,7 @@ uint64_t* OneWire::Bus::discoverDevice()
     return &scanDeviceId;
 }
 
-uint8_t OneWire::Bus::crc8(const uint8_t* data, int len)
+uint8_t ONEWIRE_OPTIMIZE OneWire::Bus::crc8(const uint8_t* data, int len)
 {
     uint8_t crc = 0;
     while (len--)
@@ -162,58 +162,58 @@ int __attribute__((optimize("-Os"))) OneWire::Bus::delay(int time)
     }
 }
 
-void OneWire::Device::select() const
+void ONEWIRE_OPTIMIZE OneWire::Device::select() const
 {
     bus->reset();
     bus->select(deviceId);
 }
 
-void OneWire::Device::sleep() const
+void ONEWIRE_OPTIMIZE OneWire::Device::sleep() const
 {
     bus->sleep();
 }
 
-void OneWire::Device::writeBit(bool bit) const
+void ONEWIRE_OPTIMIZE OneWire::Device::writeBit(bool bit) const
 {
     bus->writeBit(bit);
 }
 
-void OneWire::Device::writeByte(uint8_t byte) const
+void ONEWIRE_OPTIMIZE OneWire::Device::writeByte(uint8_t byte) const
 {
     bus->writeByte(byte);
 }
 
-void OneWire::Device::writeBytes(const uint8_t* data, int len) const
+void ONEWIRE_OPTIMIZE OneWire::Device::writeBytes(const uint8_t* data, int len) const
 {
     bus->writeBytes(data, len);
 }
 
-bool OneWire::Device::readBit() const
+bool ONEWIRE_OPTIMIZE OneWire::Device::readBit() const
 {
     return bus->readBit();
 }
 
-uint8_t OneWire::Device::readByte() const
+uint8_t ONEWIRE_OPTIMIZE OneWire::Device::readByte() const
 {
     return bus->readByte();
 }
 
-void OneWire::Device::readBytes(uint8_t* data, int len) const
+void ONEWIRE_OPTIMIZE OneWire::Device::readBytes(uint8_t* data, int len) const
 {
     return bus->readBytes(data, len);
 }
 
-void OneWire::Device::turnOnPower() const
+void ONEWIRE_OPTIMIZE OneWire::Device::turnOnPower() const
 {
     bus->turnOnPower();
 }
 
-void OneWire::Device::turnOffPower() const
+void ONEWIRE_OPTIMIZE OneWire::Device::turnOffPower() const
 {
     bus->turnOffPower();
 }
 
-const uint64_t* OneWire::Device::getDeviceId() const
+const uint64_t* ONEWIRE_OPTIMIZE OneWire::Device::getDeviceId() const
 {
     return &deviceId;
 }

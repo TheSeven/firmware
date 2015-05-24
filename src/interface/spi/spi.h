@@ -4,6 +4,11 @@
 #include "interface/gpio/gpio.h"
 
 
+#ifndef SPI_OPTIMIZE
+#define SPI_OPTIMIZE
+#endif
+
+
 namespace SPI
 {
 

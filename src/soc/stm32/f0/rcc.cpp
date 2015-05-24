@@ -145,7 +145,7 @@
 namespace STM32
 {
 
-    void RCC::init()
+    void STM32_RCC_OPTIMIZE RCC::init()
     {
         // Reset all peripherals
         STM32_RCC_REGS.RSTLINES.r.APB2RSTR.d32 = 0xffffffff;
@@ -232,7 +232,7 @@ namespace STM32
 #endif
     }
     
-    int RCC::getSysClockFrequency()
+    int STM32_RCC_OPTIMIZE RCC::getSysClockFrequency()
     {
 #ifdef STM32_RCC_DYNAMIC
         union STM32_RCC_REG_TYPE::CFGR CFGR = { STM32_RCC_REGS.CFGR.d32 };
@@ -258,7 +258,7 @@ namespace STM32
 #endif
     }
     
-    int RCC::getAHBClockFrequency()
+    int STM32_RCC_OPTIMIZE RCC::getAHBClockFrequency()
     {
 #ifdef STM32_RCC_DYNAMIC
         int prescaler = STM32_RCC_REGS.CFGR.b.HPRE;
@@ -270,7 +270,7 @@ namespace STM32
 #endif
     }
     
-    int RCC::getAPBClockFrequency()
+    int STM32_RCC_OPTIMIZE RCC::getAPBClockFrequency()
     {
 #ifdef STM32_RCC_DYNAMIC
         int prescaler = STM32_RCC_REGS.CFGR.b.PPRE;
@@ -283,7 +283,7 @@ namespace STM32
     }
 
 #ifdef STM32_RCC_DYNAMIC
-    void RCC::setSysClockSource(SysClockSource source)
+    void STM32_RCC_OPTIMIZE RCC::setSysClockSource(SysClockSource source)
     {
         enter_critical_section();
         STM32_RCC_REGS.CFGR.b.SW = source;
@@ -291,7 +291,7 @@ namespace STM32
         leave_critical_section();
     }
     
-    void RCC::setAHBDivider(int divider)
+    void STM32_RCC_OPTIMIZE RCC::setAHBDivider(int divider)
     {
         int value = 0;
         if (divider > 1) value = 8;
@@ -307,7 +307,7 @@ namespace STM32
         leave_critical_section();
     }
     
-    void RCC::setAPBDivider(int divider)
+    void STM32_RCC_OPTIMIZE RCC::setAPBDivider(int divider)
     {
         int value = 0;
         if (divider > 1) value = 4;
@@ -319,7 +319,7 @@ namespace STM32
         leave_critical_section();
     }
     
-    void RCC::setPLLClockSource(PLLClockSource source, int divider)
+    void STM32_RCC_OPTIMIZE RCC::setPLLClockSource(PLLClockSource source, int divider)
     {
         enter_critical_section();
         union STM32_RCC_REG_TYPE::CFGR CFGR = { STM32_RCC_REGS.CFGR.d32 };
@@ -331,7 +331,7 @@ namespace STM32
         leave_critical_section();
     }
     
-    void RCC::configurePLL(bool on, int factor)
+    void STM32_RCC_OPTIMIZE RCC::configurePLL(bool on, int factor)
     {
         enter_critical_section();
         union STM32_RCC_REG_TYPE::CFGR CFGR = { STM32_RCC_REGS.CFGR.d32 };
@@ -342,7 +342,7 @@ namespace STM32
         leave_critical_section();
     }
 
-    void RCC::configureOscillator(Oscillator osc, bool on, bool bypass)
+    void STM32_RCC_OPTIMIZE RCC::configureOscillator(Oscillator osc, bool on, bool bypass)
     {
         enter_critical_section();
         switch (osc)
@@ -373,17 +373,17 @@ namespace STM32
 
 }
 
-int cortexm_get_fclk_frequency()
+int STM32_RCC_OPTIMIZE cortexm_get_fclk_frequency()
 {
     return STM32::RCC::getAHBClockFrequency();
 }
 
-int cortexm_get_systick_frequency()
+int STM32_RCC_OPTIMIZE cortexm_get_systick_frequency()
 {
     return STM32::RCC::getAHBClockFrequency() >> 3;
 }
 
-bool __attribute__((optimize("-Os"))) clockgate_enable(int gate, bool on)
+bool STM32_RCC_OPTIMIZE clockgate_enable(int gate, bool on)
 {
     volatile uint32_t* reg = &STM32_RCC_REGS.CLKGATES.d32[gate >> 5];
     int bit = gate & 0x1f;
@@ -397,7 +397,7 @@ bool __attribute__((optimize("-Os"))) clockgate_enable(int gate, bool on)
     return old;
 }
 
-bool resetline_assert(int line, bool on)
+bool STM32_RCC_OPTIMIZE resetline_assert(int line, bool on)
 {
     return clockgate_enable(((((uintptr_t)&STM32_RCC_REGS.RSTLINES)
                             - ((uintptr_t)&STM32_RCC_REGS.CLKGATES)) << 3) + line, on);

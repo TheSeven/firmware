@@ -2,6 +2,12 @@
 
 #include "global.h"
 
+
+#ifndef CRC32_OPTIMIZE
+#define CRC32_OPTIMIZE
+#endif
+
+
 #ifdef __cplusplus
 extern "C"
 {

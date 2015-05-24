@@ -2,6 +2,10 @@
 
 #include "global.h"
 
+#ifndef CORTEX_SYSTICK_OPTIMIZE
+#define CORTEX_SYSTICK_OPTIMIZE __attribute__((optimize("-Os")))
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {

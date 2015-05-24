@@ -3,6 +3,11 @@
 #include "global.h"
 
 
+#ifndef STM32_RCC_OPTIMIZE
+#define STM32_RCC_OPTIMIZE
+#endif
+
+
 namespace STM32
 {
     class __attribute__((packed,aligned(4))) RCC final

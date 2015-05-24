@@ -9,17 +9,17 @@ DS1820::DS1820(const OneWire::Bus* bus, uint64_t deviceId) : Device(bus, deviceI
     readPowerSupply();
 }
 
-int DS1820::readTemperature()
+int DS1820_OPTIMIZE DS1820::readTemperature()
 {
      return scaleRawTemperature(readRawTemperature());
 }
 
-int DS1820::scaleRawTemperature(int data)
+int DS1820_OPTIMIZE DS1820::scaleRawTemperature(int data)
 {
      return (data * 1000) >> 4;
 }
 
-int DS1820::readRawTemperature()
+int DS1820_OPTIMIZE DS1820::readRawTemperature()
 {
     if (!resolution) setResolution(12);
     uint16_t data;
@@ -28,19 +28,19 @@ int DS1820::readRawTemperature()
     return data;
 }
 
-void DS1820::setResolution(int bits)
+void DS1820_OPTIMIZE DS1820::setResolution(int bits)
 {
     resolution = bits;
     uint8_t scratchpad[3] = { 0xff, 0x00, (uint8_t)((MAX(0, MIN(3, bits - 9)) << 5) | 0x1f) };
     writeScratchpad(scratchpad);
 }
 
-const uint64_t* DS1820::getDeviceId()
+const uint64_t* DS1820_OPTIMIZE DS1820::getDeviceId()
 {
     return Device::getDeviceId();
 }
 
-void DS1820::readScratchpad(uint8_t* data, int len)
+void DS1820_OPTIMIZE DS1820::readScratchpad(uint8_t* data, int len)
 {
     select();
     writeByte(0xbe);
@@ -48,7 +48,7 @@ void DS1820::readScratchpad(uint8_t* data, int len)
     sleep();
 }
 
-void DS1820::writeScratchpad(const uint8_t* data)
+void DS1820_OPTIMIZE DS1820::writeScratchpad(const uint8_t* data)
 {
     select();
     writeByte(0x4e);
@@ -56,7 +56,7 @@ void DS1820::writeScratchpad(const uint8_t* data)
     sleep();
 }
 
-void DS1820::writeEEPROM()
+void DS1820_OPTIMIZE DS1820::writeEEPROM()
 {
     select();
     writeByte(0x48);
@@ -66,7 +66,7 @@ void DS1820::writeEEPROM()
     sleep();
 }
 
-void DS1820::readEEPROM()
+void DS1820_OPTIMIZE DS1820::readEEPROM()
 {
     select();
     writeByte(0xb8);
@@ -75,7 +75,7 @@ void DS1820::readEEPROM()
     sleep();
 }
 
-void DS1820::readPowerSupply()
+void DS1820_OPTIMIZE DS1820::readPowerSupply()
 {
     select();
     writeByte(0xb4);
@@ -83,7 +83,7 @@ void DS1820::readPowerSupply()
     sleep();
 }
 
-void DS1820::convertTemperature()
+void DS1820_OPTIMIZE DS1820::convertTemperature()
 {
     select();
     writeByte(0x44);
@@ -102,6 +102,6 @@ void DS1820::convertTemperature()
     sleep();
 }
 
-void __attribute__((weak)) DS1820::wait(int timeout)
+void __attribute__((weak)) DS1820_OPTIMIZE DS1820::wait(int timeout)
 {
 }

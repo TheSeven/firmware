@@ -3,6 +3,11 @@
 #include "global.h"
 
 
+#ifndef GPIO_OPTIMIZE
+#define GPIO_OPTIMIZE __attribute__((optimize("-Os")))
+#endif
+
+
 class __attribute__((packed,aligned(4))) GPIO
 {
 public:

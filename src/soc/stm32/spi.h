@@ -4,6 +4,11 @@
 #include "interface/spi/spi.h"
 
 
+#ifndef STM32_SPI_OPTIMIZE
+#define STM32_SPI_OPTIMIZE
+#endif
+
+
 namespace STM32
 {
 

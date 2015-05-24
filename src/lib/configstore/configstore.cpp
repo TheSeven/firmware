@@ -5,7 +5,7 @@
 #include "lib/crc32/crc32.h"
 
 
-Storage::Result ConfigStore::init(Storage* storage)
+Storage::Result CONFIGSTORE_OPTIMIZE ConfigStore::init(Storage* storage)
 {
     uint32_t partSize = getSize(storage) * MAX(storage->programSize, storage->eraseSize);
     if (storage->pageCount < partSize) return Storage::RESULT_INVALID_ARGUMENT;
@@ -71,14 +71,14 @@ Storage::Result ConfigStore::init(Storage* storage)
     return Storage::RESULT_OK;
 }
 
-uint32_t ConfigStore::getSize(Storage* storage)
+uint32_t CONFIGSTORE_OPTIMIZE ConfigStore::getSize(Storage* storage)
 {
     int blockSize = storage->pageSize * MAX(storage->programSize, storage->eraseSize);
     int dataSize = data->size + sizeof(ConfigDataHeader);
     return (dataSize + blockSize - 1) / blockSize * 2;
 }
 
-Storage::Result ConfigStore::save()
+Storage::Result CONFIGSTORE_OPTIMIZE ConfigStore::save()
 {
     if (crc32(data, data->size + sizeof(ConfigDataHeader) - sizeof(data->crc)) == data->crc)
         return Storage::RESULT_OK;

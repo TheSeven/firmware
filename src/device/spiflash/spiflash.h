@@ -5,6 +5,11 @@
 #include "interface/spi/spi.h"
 
 
+#ifndef SPIFLASH_OPTIMIZE
+#define SPIFLASH_OPTIMIZE
+#endif
+
+
 class __attribute__((packed,aligned(4))) SPIFlash final : SPI::Device, public Storage
 {
 public:

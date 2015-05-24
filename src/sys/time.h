@@ -2,6 +2,12 @@
 
 #include "global.h"
 
+
+#ifndef TIME_OPTIMIZE
+#define TIME_OPTIMIZE
+#endif
+
+
 #define TIME_AFTER(a, b) ((long)(b) - (long)(a) < 0)
 #define TIME_BEFORE(a, b) TIME_AFTER(b, a)
 #define TIMEOUT_SETUP(a) (read_usec_timer() + (a))

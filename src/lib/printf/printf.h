@@ -3,6 +3,12 @@
 #include "global.h"
 #include "sys/stdarg.h"
 
+
+#ifndef PRINTF_OPTIMIZE
+#define PRINTF_OPTIMIZE
+#endif
+
+
 #ifdef __cplusplus
 extern "C"
 {

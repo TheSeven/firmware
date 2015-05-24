@@ -44,7 +44,7 @@ namespace STM32
 #endif
     };
     
-    int SPI::setFrequency(int frequency) const
+    int STM32_SPI_OPTIMIZE SPI::setFrequency(int frequency) const
     {
         volatile STM32_SPI_REG_TYPE* regs = spi_regs[index];
 #if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
@@ -69,17 +69,17 @@ namespace STM32
         return baseclock;
     }
     
-    void SPI::select() const
+    void STM32_SPI_OPTIMIZE SPI::select() const
     {
         clockgate_enable(spi_clocks[index], true);
     }
 
-    void SPI::deselect() const
+    void STM32_SPI_OPTIMIZE SPI::deselect() const
     {
         clockgate_enable(spi_clocks[index], false);
     }
 
-    uint8_t SPI::pushByte(uint8_t byte) const
+    uint8_t STM32_SPI_OPTIMIZE SPI::pushByte(uint8_t byte) const
     {
         volatile STM32_SPI_REG_TYPE* regs = spi_regs[index];
         while (!(regs->SR.b.TXE));
@@ -88,7 +88,7 @@ namespace STM32
         return regs->DR;
     }
     
-    void SPI::pushBuffer(const void* inbuf, void* outbuf, int len) const
+    void STM32_SPI_OPTIMIZE SPI::pushBuffer(const void* inbuf, void* outbuf, int len) const
     {
         if (!len) return;
         volatile STM32_SPI_REG_TYPE* regs = spi_regs[index];

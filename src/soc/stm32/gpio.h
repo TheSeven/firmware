@@ -4,6 +4,11 @@
 #include "interface/gpio/gpio.h"
 
 
+#ifndef STM32_GPIO_OPTIMIZE
+#define STM32_GPIO_OPTIMIZE
+#endif
+
+
 #define STM32_GPIO_PORTA (0 << 4)
 #define STM32_GPIO_PORTB (1 << 4)
 #define STM32_GPIO_PORTC (2 << 4)

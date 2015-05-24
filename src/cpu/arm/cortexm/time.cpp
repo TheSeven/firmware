@@ -13,16 +13,16 @@ uint32_t cortexm_systick_interval;
 uint32_t cortexm_systick_scale;
 uint32_t cortexm_systick_last_usec;
 
-void __attribute__((weak)) cortexm_systick_task(uint32_t time)
+void __attribute__((weak)) CORTEX_SYSTICK_OPTIMIZE cortexm_systick_task(uint32_t time)
 {
 }
 
-extern "C" void SysTick_faulthandler()
+extern "C" void CORTEX_SYSTICK_OPTIMIZE SysTick_faulthandler()
 {
     cortexm_systick_task(read_usec_timer());
 }
 
-uint32_t cortexm_set_systick_interval(uint32_t interval)
+uint32_t CORTEX_SYSTICK_OPTIMIZE cortexm_set_systick_interval(uint32_t interval)
 {
     uint32_t ctrl = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
     uint32_t freq = cortexm_get_systick_frequency();
@@ -50,7 +50,7 @@ uint32_t cortexm_set_systick_interval(uint32_t interval)
 #define CORTEXM_SYSTICK_INTERVAL_BOOT (((uint64_t)MIN(CORTEXM_SYSTICK_CYCLES_BOOT, 0x1000000)) * 1000000 / CORTEXM_SYSTICK_CLKFREQ_BOOT)
 #define CORTEXM_SYSTICK_ACTUAL_CYCLES_BOOT (((uint64_t)CORTEXM_SYSTICK_CLKFREQ_BOOT) * CORTEXM_SYSTICK_INTERVAL_BOOT / 1000000)
 
-void time_init()
+void CORTEX_SYSTICK_OPTIMIZE time_init()
 {
     SysTick->CTRL = 0;
     SysTick->LOAD = CORTEXM_SYSTICK_ACTUAL_CYCLES_BOOT - 1;
@@ -60,7 +60,7 @@ void time_init()
     cortexm_systick_scale = (((uint64_t)CORTEXM_SYSTICK_INTERVAL_BOOT) << 32) / CORTEXM_SYSTICK_ACTUAL_CYCLES_BOOT - 1;
 }
 
-unsigned int __attribute__((optimize("-Os"))) read_usec_timer()
+unsigned int CORTEX_SYSTICK_OPTIMIZE read_usec_timer()
 {
     uint32_t max = SysTick->LOAD;
     enter_critical_section();

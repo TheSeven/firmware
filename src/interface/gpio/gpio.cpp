@@ -13,49 +13,49 @@ GPIO::PinController* gpio_controllers[GPIO_DYNAMIC_CONTROLLERS + 1] =
 #define GPIO_CONTROLLER GPIO_STATIC_CONTROLLER
 #endif
 
-bool __attribute__((optimize("-Os"))) GPIO::getLevel(Pin pin)
+bool GPIO_OPTIMIZE GPIO::getLevel(Pin pin)
 {
     return GPIO_CONTROLLER.getLevel(pin.pin);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::setLevel(Pin pin, bool level)
+void GPIO_OPTIMIZE GPIO::setLevel(Pin pin, bool level)
 {
     GPIO_CONTROLLER.setLevel(pin.pin, level);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::setMode(Pin pin, enum mode mode)
+void GPIO_OPTIMIZE GPIO::setMode(Pin pin, enum mode mode)
 {
     GPIO_CONTROLLER.setMode(pin.pin, mode);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::setType(Pin pin, enum type type)
+void GPIO_OPTIMIZE GPIO::setType(Pin pin, enum type type)
 {
     GPIO_CONTROLLER.setType(pin.pin, type);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::setPull(Pin pin, enum pull pull)
+void GPIO_OPTIMIZE GPIO::setPull(Pin pin, enum pull pull)
 {
     GPIO_CONTROLLER.setPull(pin.pin, pull);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::setSpecial(Pin pin, int function)
+void GPIO_OPTIMIZE GPIO::setSpecial(Pin pin, int function)
 {
     GPIO_CONTROLLER.setSpecial(pin.pin, function);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::configure(Pin pin, enum mode mode, bool level)
+void GPIO_OPTIMIZE GPIO::configure(Pin pin, enum mode mode, bool level)
 {
     GPIO_CONTROLLER.setLevel(pin.pin, level);
     GPIO_CONTROLLER.setMode(pin.pin, mode);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::configure(Pin pin, int function)
+void GPIO_OPTIMIZE GPIO::configure(Pin pin, int function)
 {
     GPIO_CONTROLLER.setSpecial(pin.pin, function);
     GPIO_CONTROLLER.setMode(pin.pin, GPIO::MODE_SPECIAL);
 }
 
-void __attribute__((optimize("-Os"))) GPIO::configure(Pin pin, enum mode mode, bool level, enum type type, enum pull pull, int function)
+void GPIO_OPTIMIZE GPIO::configure(Pin pin, enum mode mode, bool level, enum type type, enum pull pull, int function)
 {
     GPIO_CONTROLLER.setLevel(pin.pin, level);
     GPIO_CONTROLLER.setSpecial(pin.pin, function);

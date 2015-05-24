@@ -4,6 +4,11 @@
 #include "interface/onewire/onewire.h"
 
 
+#ifndef DS1820_OPTIMIZE
+#define DS1820_OPTIMIZE
+#endif
+
+
 class __attribute__((packed,aligned(4))) DS1820 final : OneWire::Device
 {
 public:

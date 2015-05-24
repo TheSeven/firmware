@@ -13,7 +13,7 @@ SDHC_SPI::SDHC_SPI(const SPI::Bus* bus, GPIO::Pin cspin, int maxSpeed)
     reset();
 }
 
-bool SDHC_SPI::waitIdle()
+bool SDHC_SPI_OPTIMIZE SDHC_SPI::waitIdle()
 {
     long timeout = TIMEOUT_SETUP(500000);
     uint8_t data = 0;
@@ -22,7 +22,7 @@ bool SDHC_SPI::waitIdle()
     return true;
 }
 
-int SDHC_SPI::sendCmd(uint8_t cmd, uint32_t arg)
+int SDHC_SPI_OPTIMIZE SDHC_SPI::sendCmd(uint8_t cmd, uint32_t arg)
 {
     if (cmd & 0x80)
     {
@@ -53,7 +53,7 @@ int SDHC_SPI::sendCmd(uint8_t cmd, uint32_t arg)
     return data;
 }
 
-uint32_t SDHC_SPI::readR3()
+uint32_t SDHC_SPI_OPTIMIZE SDHC_SPI::readR3()
 {
     int bytes = 4;
     uint32_t data = 0;
@@ -61,7 +61,7 @@ uint32_t SDHC_SPI::readR3()
     return data;
 }
 
-bool SDHC_SPI::readBlock(void* buf, int len)
+bool SDHC_SPI_OPTIMIZE SDHC_SPI::readBlock(void* buf, int len)
 {
     udelay(1);
     uint8_t data = 0xff;
@@ -74,7 +74,7 @@ bool SDHC_SPI::readBlock(void* buf, int len)
     return true;
 }
 
-bool SDHC_SPI::writeBlock(const void* buf, int len, uint8_t token)
+bool SDHC_SPI_OPTIMIZE SDHC_SPI::writeBlock(const void* buf, int len, uint8_t token)
 {
     uint8_t data = 0;
     long timeout = TIMEOUT_SETUP(500000);
@@ -89,7 +89,7 @@ bool SDHC_SPI::writeBlock(const void* buf, int len, uint8_t token)
     return true;
 }
 
-enum Storage::Result SDHC_SPI::reset()
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::reset()
 {
     initialized = false;
     sdhc = false;
@@ -163,12 +163,12 @@ enum Storage::Result SDHC_SPI::reset()
     return RESULT_OK;
 }
 
-enum Storage::Result SDHC_SPI::getStatus()
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::getStatus()
 {
     return initialized ? RESULT_OK : RESULT_INVALID_STATE;
 }
 
-enum Storage::Result SDHC_SPI::readInternal(uint32_t page, uint32_t len, void* buf)
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::readInternal(uint32_t page, uint32_t len, void* buf)
 {
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
@@ -194,7 +194,7 @@ enum Storage::Result SDHC_SPI::readInternal(uint32_t page, uint32_t len, void* b
     return rc;
 }
 
-enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
@@ -206,7 +206,7 @@ enum Storage::Result SDHC_SPI::read(uint32_t page, uint32_t len, void* buf)
     return readInternal(page, len, buf);
 }
 
-enum Storage::Result SDHC_SPI::writeInternal(uint32_t page, uint32_t len, const void* buf)
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::writeInternal(uint32_t page, uint32_t len, const void* buf)
 {
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
@@ -231,7 +231,7 @@ enum Storage::Result SDHC_SPI::writeInternal(uint32_t page, uint32_t len, const 
     return rc;
 }
 
-enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* buf)
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* buf)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
@@ -243,7 +243,7 @@ enum Storage::Result SDHC_SPI::write(uint32_t page, uint32_t len, const void* bu
     return writeInternal(page, len, buf);
 }
 
-enum Storage::Result SDHC_SPI::eraseInternal(uint32_t page, uint32_t len)
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::eraseInternal(uint32_t page, uint32_t len)
 {
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
@@ -252,7 +252,7 @@ enum Storage::Result SDHC_SPI::eraseInternal(uint32_t page, uint32_t len)
     return rc;
 }
 
-enum Storage::Result SDHC_SPI::erase(uint32_t page, uint32_t len)
+enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::erase(uint32_t page, uint32_t len)
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
