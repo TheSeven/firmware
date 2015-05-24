@@ -19,7 +19,11 @@ NRF::SPI::Status NRF::Radio::setMode(bool receive)
 {
     Config config;
     readReg(Reg_Config, &config, sizeof(config));
+    bool powerUp = config.b.powerUp;
+    config.b.powerUp = false;
     config.b.role = (Config::b::Role)receive;
+    writeReg(Reg_Config, &config, sizeof(config));
+    config.b.powerUp = powerUp;
     return writeReg(Reg_Config, &config, sizeof(config));
 }
 
