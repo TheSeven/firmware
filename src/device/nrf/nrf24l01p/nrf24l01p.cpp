@@ -11,6 +11,8 @@ void NRF::NRF24L01P::configure(Configuration* config)
     configOff.b.maskDataSent = true;
     configOff.b.maskMaxRetrans = true;
     writeReg(Reg_Config, &configOff, sizeof(configOff));
+    configOff.d8 = config->config.d8;
+    configOff.b.powerUp = false;
     flushTx();
     Status status = flushRx();
     writeReg(Reg_Status, &status, sizeof(status));
@@ -23,6 +25,7 @@ void NRF::NRF24L01P::configure(Configuration* config)
     writeReg(Reg_RfChannel, &config->rfChannel, sizeof(config->rfChannel));
     writeReg(Reg_RfSetup, &config->rfSetup, sizeof(config->rfSetup));
     writeReg(Reg_DynLengthCtl, &config->dynLengthCtl, sizeof(config->dynLengthCtl));
+    writeReg(Reg_Config, &configOff, sizeof(configOff));
     writeReg(Reg_Config, &config->config, sizeof(config->config));
 }
 
