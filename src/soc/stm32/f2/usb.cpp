@@ -4,11 +4,10 @@
 #include "interface/irq/irq.h"
 #include "interface/clockgate/clockgate.h"
 #include "sys/util.h"
-#include "usb.h"
 
 
 constexpr STM32::USB::CoreRuntimeParams STM32::USB::coreRuntimeParams[];
-static STM32::USB* stm32_usb_instance[STM32::USB_CORE_COUNT];
+STM32::USB* STM32::USB::activeInstance[STM32::USB_CORE_COUNT];
 
 
 void STM32::USB::socEnableClocks()
@@ -23,7 +22,7 @@ void STM32::USB::socDisableClocks()
 
 void STM32::USB::socEnableIrq()
 {
-    stm32_usb_instance[core] = this;
+    activeInstance[core] = this;
     irq_enable(STM32::USB::coreRuntimeParams[core].irq, true);
 }
 
@@ -37,14 +36,18 @@ void STM32::USB::socClearIrq()
     irq_clear_pending(STM32::USB::coreRuntimeParams[core].irq);
 }
 
+void STM32::USB::handleIrq(UsbCore core)
+{
+    if (activeInstance[core]) activeInstance[core]->handleIrq();
+    else irq_enable(STM32::USB::coreRuntimeParams[core].irq, false);
+}
+
 extern "C" void otg_fs_irqhandler()
 {
-    if (stm32_usb_instance[STM32::OTG_FS]) stm32_usb_instance[STM32::OTG_FS]->handleIrq();
-    else irq_enable(otg_fs_IRQn, false);
+    STM32::USB::handleIrq(STM32::OTG_FS);
 }
 
 extern "C" void otg_hs_irqhandler()
 {
-    if (stm32_usb_instance[STM32::OTG_HS]) stm32_usb_instance[STM32::OTG_HS]->handleIrq();
-    else irq_enable(otg_hs_IRQn, false);
+    STM32::USB::handleIrq(STM32::OTG_HS);
 }

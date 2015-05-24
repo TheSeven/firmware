@@ -34,12 +34,12 @@ namespace USB
         struct __attribute__((packed))
         {
             uint8_t number : 4;
-            uint8_t : 3;
+            uint8_t reserved : 3;
             Direction direction : 1;
         };
         constexpr EndpointNumber() : u8(0) {}
         constexpr EndpointNumber(uint8_t byte) : u8(byte) {}
-        constexpr EndpointNumber(Direction direction, int number) : number(number), direction(direction) {}
+        constexpr EndpointNumber(Direction direction, int number) : number(number), reserved(0), direction(direction) {}
     };
 
     struct __attribute__((packed)) EndpointAttributes
@@ -249,6 +249,7 @@ namespace USB
     class __attribute__((packed,aligned(4))) AltSetting
     {
     public:
+        virtual int ctrlRequest(USB* usb, SetupPacket* request, const void** response) = 0;
         virtual void set(USB* usb) = 0;
         virtual void unset(USB* usb) = 0;
         uint32_t : 24;
@@ -260,8 +261,6 @@ namespace USB
     class __attribute__((packed,aligned(4))) Interface
     {
     public:
-        virtual void busReset(USB* usb, bool highSpeed) = 0;
-        virtual int ctrlRequest(USB* usb, SetupPacket* request, const void** response) = 0;
         uint32_t : 16;
         uint8_t currentAltSetting;
         uint8_t altSettingCount;
@@ -273,6 +272,7 @@ namespace USB
     class __attribute__((packed,aligned(4))) Configuration
     {
     public:
+        virtual void busReset(USB* usb) = 0;
         virtual void set(USB* usb) = 0;
         virtual void unset(USB* usb) = 0;
         const Descriptor::ConfigurationDescriptor* descriptor;
@@ -316,13 +316,13 @@ namespace USB
         bool ep0ShortTxCallback(EndpointNumber epNum, int bytesLeft);
         static bool ep0AckCallback(USB* usb, EndpointNumber epNum, int bytesLeft);
         bool ep0AckCallback(EndpointNumber epNum, int bytesLeft);
-        union __attribute__((packed)) Buffer
+        union __attribute__((packed,aligned(4))) Buffer
         {
             uint8_t u8[64];
             SetupPacket setup;
             constexpr Buffer() : setup() {}
-        } buffer;
-        void (*busResetHook)(USB* usb, int highSpeed);
+        } *buffer;
+        void (*busResetHook)(USB* usb);
         int (*ctrlRequestHook)(USB* usb, SetupPacket* request, const void** response);
         int (*ep0SetupHook)(USB* usb, SetupPacket* buf);
         bool (*ep0RxCallback)(USB* usb, EndpointNumber epNum, int bytesLeft);
@@ -336,15 +336,16 @@ namespace USB
         Configuration* const* configurations;
         uint8_t currentAddress;
         uint8_t currentConfiguration;
-        uint32_t : 16;
+        uint8_t needsAlign;
+        bool highSpeed;
         constexpr USB(const Descriptor::DeviceDescriptor* deviceDescriptor,
                       const Descriptor::StringDescriptor* const* stringDescriptors, uint8_t stringDescriptorCount,
-                      Configuration* const* configurations, uint8_t configurationCount)
-            : busResetHook(NULL), ctrlRequestHook(NULL), ep0SetupHook(NULL), ep0RxCallback(NULL),
-              ep0TxCallback(NULL), ep0TxPtr(NULL), ep0TxLen(0), stringDescriptorCount(stringDescriptorCount),
-              configurationCount(configurationCount), deviceDescriptor(deviceDescriptor),
-              stringDescriptors(stringDescriptors), configurations(configurations),
-              currentAddress(0), currentConfiguration(0) {}
+                      Configuration* const* configurations, uint8_t configurationCount, void* buffer, bool needsAlign)
+            : buffer((Buffer*)buffer), busResetHook(NULL), ctrlRequestHook(NULL), ep0SetupHook(NULL),
+              ep0RxCallback(NULL), ep0TxCallback(NULL), ep0TxPtr(NULL), ep0TxLen(0),
+              stringDescriptorCount(stringDescriptorCount), configurationCount(configurationCount),
+              deviceDescriptor(deviceDescriptor), stringDescriptors(stringDescriptors), configurations(configurations),
+              currentAddress(0), currentConfiguration(0), needsAlign(needsAlign), highSpeed(false) {}
     };
 
 }

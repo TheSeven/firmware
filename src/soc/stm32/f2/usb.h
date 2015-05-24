@@ -51,7 +51,10 @@ namespace STM32
             { otg_hs_IRQn, STM32_OTGHS_CLOCKGATE },
         };
 
+        static USB* activeInstance[USB_CORE_COUNT];
+
     public:
+        static void handleIrq(UsbCore core);
         constexpr USB(const ::USB::Descriptor::DeviceDescriptor* deviceDescriptor,
                       const ::USB::Descriptor::StringDescriptor* const* stringDescriptors,
                       uint8_t stringDescriptorCount, ::USB::Configuration* const* configurations,

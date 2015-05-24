@@ -47,7 +47,7 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
     // size == -1: try to run default handler, or send STALL if none exists
     // size == 0: send ACK
     // size > 0: send <size> bytes at <addr>, then expect ACK
-    const void* addr = buffer.u8;
+    const void* addr = buffer;
     int size = -1;
     switch (packet->bmRequestType.recipient)
     {
@@ -61,8 +61,8 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
             {
             case GetStatus:
                 if (packet->wLength != 2 || packet->wIndex || !currentAddress || packet->wValue) break;
-                buffer.u8[0] = 0;
-                buffer.u8[1] = 1;
+                buffer->u8[0] = 0;
+                buffer->u8[1] = 1;
                 size = 2;
                 break;
             case SetAddress:
@@ -97,7 +97,7 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
                 break;
             case GetConfiguration:
                 if (packet->wLength != 1 || packet->wIndex || !currentAddress || packet->wValue) break;
-                buffer.u8[0] = currentConfiguration;
+                buffer->u8[0] = currentConfiguration;
                 size = 1;
                 break;
             case SetConfiguration:
@@ -132,7 +132,7 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
         int intfId = packet->wIndex;
         if (intfId >= configuration->interfaceCount) break;
         Interface* interface = configuration->interfaces[intfId];
-        size = interface->ctrlRequest(this, packet, &addr);
+        size = interface->altSettings[interface->currentAltSetting]->ctrlRequest(this, packet, &addr);
         if (size != -1) break;
         switch (packet->bmRequestType.type)
         {
@@ -141,23 +141,21 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
             {
             case GetStatus:
                 if (packet->wLength != 2 || packet->wValue) break;
-                buffer.u8[0] = 0;
-                buffer.u8[1] = 0;
+                buffer->u8[0] = 0;
+                buffer->u8[1] = 0;
                 size = 2;
                 break;
             case GetInterface:
                 if (packet->wLength != 1 || packet->wValue) break;
-                buffer.u8[0] = interface->currentAltSetting;
+                buffer->u8[0] = interface->currentAltSetting;
                 size = 1;
                 break;
             case SetInterface:
             {
                 if (packet->wLength || packet->wValue > interface->altSettingCount) break;
-                AltSetting* altSetting = interface->altSettings[interface->currentAltSetting];
-                altSetting->unset(this);
+                interface->altSettings[interface->currentAltSetting]->unset(this);
                 interface->currentAltSetting = packet->wValue;
-                altSetting = interface->altSettings[interface->currentAltSetting];
-                altSetting->set(this);
+                interface->altSettings[interface->currentAltSetting]->set(this);
                 break;
             }
             default: break;
@@ -184,8 +182,8 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
             {
             case GetStatus:
                 if (packet->wLength != 2 || packet->wValue) break;
-                buffer.u8[0] = 0;
-                buffer.u8[1] = drvGetStall(ep);
+                buffer->u8[0] = 0;
+                buffer->u8[1] = drvGetStall(ep);
                 size = 2;
                 break;
             case ClearFeature:
@@ -236,15 +234,12 @@ void USB::USB::handleBusReset(int highSpeed)
 {
     currentAddress = 0;
     unconfigure();
-    if (busResetHook) busResetHook(this, highSpeed);
+    this->highSpeed = highSpeed;
+    if (busResetHook) busResetHook(this);
     for (int c = 0; c < configurationCount; c++)
     {
         Configuration* configuration = configurations[c];
-        for (int i = 0; i < configuration->interfaceCount; i++)
-        {
-            Interface* interface = configuration->interfaces[i];
-            interface->busReset(this, highSpeed);
-        }
+        configuration->busReset(this);
     }
 
     // Prime EP0 for the first setup packet.
@@ -282,7 +277,7 @@ void USB::USB::handleSetupReceived(EndpointNumber epNum, uint32_t offset)
 {
     if (!epNum.number)
     {
-        SetupPacket* packet = (SetupPacket*)&buffer.u8[offset];
+        SetupPacket* packet = (SetupPacket*)&buffer->u8[offset];
         if (!ep0SetupHook || !ep0SetupHook(this, packet)) handleEp0Setup(packet);
     }
     else
@@ -322,10 +317,10 @@ void USB::USB::ep0StartRx(bool non_setup, int len, bool (*callback)(USB* usb, En
 
 void USB::USB::ep0StartTx(const void* buf, int len, bool (*callback)(USB* usb, EndpointNumber epNum, int bytesLeft))
 {
-    if (((uint32_t)buf) & (CACHEALIGN_SIZE - 1))
+    if (needsAlign && ((uint32_t)buf) & (CACHEALIGN_SIZE - 1))
     {
-        memcpy(buffer.u8, buf, len);
-        buf = buffer.u8;
+        memcpy(buffer->u8, buf, len);
+        buf = buffer->u8;
     }
 
     ep0TxCallback = callback;
