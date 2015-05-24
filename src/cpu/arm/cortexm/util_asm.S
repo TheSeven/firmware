@@ -392,6 +392,21 @@ __aeabi_atexit:
     bx lr
 .size __aeabi_atexit, . - __aeabi_atexit
 
+.section .text.__gnu_thumb1_case_sqi,"ax",%progbits
+.global __gnu_thumb1_case_sqi
+.type __gnu_thumb1_case_sqi, %function
+__gnu_thumb1_case_sqi:
+    push {r1}
+    mov r1, lr
+    lsrs r1, r1, #1
+    lsls r1, r1, #1
+    ldrsb r1, [r1, r0]
+    lsls r1, r1, #1
+    add lr, lr, r1
+    pop {r1}
+    bx lr
+.size __gnu_thumb1_case_sqi, . - __gnu_thumb1_case_sqi
+
 .section .text.__gnu_thumb1_case_uqi,"ax",%progbits
 .global __gnu_thumb1_case_uqi
 .type __gnu_thumb1_case_uqi, %function
@@ -406,3 +421,52 @@ __gnu_thumb1_case_uqi:
     pop {r1}
     bx lr
 .size __gnu_thumb1_case_uqi, . - __gnu_thumb1_case_uqi
+
+.section .text.__gnu_thumb1_case_shi,"ax",%progbits
+.global __gnu_thumb1_case_shi
+.type __gnu_thumb1_case_shi, %function
+__gnu_thumb1_case_shi:
+    push {r0, r1}
+    mov r1, lr
+    lsrs r1, r1, #1
+    lsls r0, r0, #1
+    lsls r1, r1, #1
+    ldrsh r1, [r1, r0]
+    lsls r1, r1, #1
+    add lr, lr, r1
+    pop {r0, r1}
+    bx lr
+.size __gnu_thumb1_case_shi, . - __gnu_thumb1_case_shi
+
+.section .text.__gnu_thumb1_case_uhi,"ax",%progbits
+.global __gnu_thumb1_case_uhi
+.type __gnu_thumb1_case_uhi, %function
+__gnu_thumb1_case_uhi:
+    push {r0, r1}
+    mov r1, lr
+    lsrs r1, r1, #1
+    lsls r0, r0, #1
+    lsls r1, r1, #1
+    ldrh r1, [r1, r0]
+    lsls r1, r1, #1
+    add lr, lr, r1
+    pop {r0, r1}
+    bx lr
+.size __gnu_thumb1_case_uhi, . - __gnu_thumb1_case_uhi
+
+.section .text.__gnu_thumb1_case_si,"ax",%progbits
+.global __gnu_thumb1_case_si
+.type __gnu_thumb1_case_si, %function
+__gnu_thumb1_case_si:
+    push {r0, r1}
+    mov r1, lr
+    adds.n r1, r1, #2
+    lsrs r1, r1, #2
+    lsls r0, r0, #2
+    lsls r1, r1, #2
+    ldr r0, [r1, r0]
+    adds r0, r0, r1
+    mov lr, r0
+    pop {r0, r1}
+    mov pc, lr
+.size __gnu_thumb1_case_si, . - __gnu_thumb1_case_si
