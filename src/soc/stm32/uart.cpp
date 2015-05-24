@@ -116,7 +116,11 @@ namespace STM32
             CR1.b.OVER8 = true;
             divisor = ((divisor & ~7) << 1) | (divisor & 7);
         }
+#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
         CR1.b.M = config.parity != config.ParityNone;
+#else
+        CR1.b.M0 = config.parity != config.ParityNone;
+#endif
         CR1.b.PCE = config.parity != config.ParityNone;
         CR1.b.PS = config.parity == config.ParityOdd;
         CR2.b.STOP = (typeof(CR2.b.STOP))config.stopBits;
@@ -124,7 +128,11 @@ namespace STM32
         CR3.b.RTSE = config.signalRTS;
         CR3.b.HDSEL = config.halfDuplex;
         clockgate_enable(uart_clocks[index], true);
+#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
         while (!regs->SR.b.TC);
+#else
+        while (!regs->ISR.b.TC);
+#endif
         regs->CR1.d32 = 0;
         regs->BRR.d32 = divisor;
         regs->CR3.d32 = CR3.d32;
@@ -142,10 +150,14 @@ namespace STM32
 #else
         while (!regs->ISR.b.TXE);
 #endif
+#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
+        regs->DR = byte;
+#else
+        regs->TDR = byte;
+#endif
         union STM32_USART_REG_TYPE::CR1 CR1 = { regs->CR1.d32 };
         CR1.b.TXEIE = true;
-        regs->CR1.d32 = CR1.d32;;
-        regs->DR = byte;
+        regs->CR1.d32 = CR1.d32;
     }
 
     void UART::flush()
@@ -168,8 +180,11 @@ namespace STM32
 #endif
         if (SR.b.RXNE)
         {
-            if (SR.b.ORE) bwRxCallback(0, ::UART::RESULT_OVERFLOW_ERROR);
+#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
             uint8_t data = regs->DR;
+#else
+            uint8_t data = regs->RDR;
+#endif
             ::UART::Result result = ::UART::RESULT_OK;
             if (SR.b.FE) result = ::UART::RESULT_FRAMING_ERROR;
             else if (SR.b.PE) result = ::UART::RESULT_PARITY_ERROR;
@@ -177,14 +192,24 @@ namespace STM32
             else if (SR.b.NE) result = ::UART::RESULT_NOISE_ERROR;
 #else
             else if (SR.b.NF) result = ::UART::RESULT_NOISE_ERROR;
+            regs->ICR.d32 = SR.d32 & 7;
 #endif
             bwRxCallback(data, result);
         }
-        if (SR.b.TXE)
+        if (SR.b.ORE)
         {
-            union STM32_USART_REG_TYPE::CR1 CR1 = { regs->CR1.d32 };
+            bwRxCallback(0, ::UART::RESULT_OVERFLOW_ERROR);
+#if !defined(SOC_STM32F1) && !defined(SOC_STM32F2) && !defined(SOC_STM32F4)
+            union STM32_USART_REG_TYPE::ICR ICR = { 0 };
+            ICR.b.ORE = true;
+            regs->ICR.d32 = ICR.d32;
+#endif
+        }
+        union STM32_USART_REG_TYPE::CR1 CR1 = { regs->CR1.d32 };
+        if (SR.b.TXE && CR1.b.TXEIE)
+        {
             CR1.b.TXEIE = false;
-            regs->CR1.d32 = CR1.d32;;
+            regs->CR1.d32 = CR1.d32;
             bwTxCallback();
         }
     }
