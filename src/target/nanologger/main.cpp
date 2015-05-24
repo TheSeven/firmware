@@ -219,6 +219,7 @@ void DS1820::wait(int timeout)
 void __attribute__((noreturn)) error(uint32_t number)
 {
 #ifdef HAVE_LCD
+    GPIO::setLevel(PIN_LED, false);
     const static char* const errmsg[] =
     {
         "Unknown (%x)",
