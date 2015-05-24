@@ -32,7 +32,7 @@ NRF::SPI::Status NRF::Radio::setPacketSize(int pipe, int length)
     return writeReg(Reg_RxDataLength0 + pipe, &length, 1);
 }
 
-NRF::SPI::Status NRF::Radio::transmit(int pipe, const uint8_t* data, int length)
+NRF::SPI::Status NRF::Radio::transmit(int pipe, const void* data, int length)
 {
     Status status = getStatus();
     if (status.b.txFull) return status;
