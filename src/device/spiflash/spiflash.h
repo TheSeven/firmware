@@ -37,8 +37,10 @@ public:
     virtual enum Result write(uint32_t page, uint32_t len, const void* buf);
     virtual enum Result erase(uint32_t page, uint32_t len);
 
+    bool stayAwake(bool on);
+
 private:
-    bool waitIdle();
+    bool waitIdle(bool oldAwake);
     int initSpeed;
     int maxSpeed;
     uint8_t eraseCmd;

@@ -26,17 +26,18 @@ SPIFLASH_OPTIMIZE SPIFlash::SPIFlash(const SPI::Bus* bus, GPIO::Pin cspin, int i
     reset();
 }
 
-bool SPIFLASH_OPTIMIZE SPIFlash::waitIdle()
+bool SPIFLASH_OPTIMIZE SPIFlash::waitIdle(bool oldAwake)
 {
     long timeout = TIMEOUT_SETUP(2000000);
     while (!TIMEOUT_EXPIRED(timeout))
     {
-        select();
         pushByte(0x05);
         uint8_t result = pushByte(0);
-        deselect();
+        reselect();
         if (!(result & 1)) return true;
     }
+    deselect();
+    stayAwake(oldAwake);
     return false;
 }
 
@@ -44,22 +45,26 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::reset()
 {
     initialized = false;
     frequency = initSpeed;
-    if (!waitIdle()) return RESULT_COMM_ERROR;
+    bool oldAwake = stayAwake(true);
     select();
+    if (!waitIdle(oldAwake)) return RESULT_COMM_ERROR;
     pushByte(0x9f);
     uint8_t manufacturer = pushByte(0);
     uint8_t type = pushByte(0);
     uint8_t density = pushByte(0);
-    deselect();
     if (manufacturer == type && manufacturer == density)
     {
-        select();
+        reselect();
         pushByte(0x15);
         manufacturer = pushByte(0);
         type = pushByte(0);
         density = 0xff;
-        deselect();
-        if (manufacturer == type) return RESULT_UNSUPPORTED;
+        if (manufacturer == type)
+        {
+            deselect();
+            stayAwake(oldAwake);
+            return RESULT_UNSUPPORTED;
+        }
     }
     const DeviceType* deviceType = NULL;
     for (uint32_t i = 0; i < ARRAYLEN(deviceTypes); i++)
@@ -70,21 +75,26 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::reset()
         deviceType = &deviceTypes[i];
         break;
     }
-    if (!deviceType) return RESULT_UNSUPPORTED;
+    if (!deviceType)
+    {
+        deselect();
+        stayAwake(oldAwake);
+        return RESULT_UNSUPPORTED;
+    }
     pageCount = 1 << (deviceType->sectorCount + deviceType->sectorSize + deviceType->pageSize);
     if (!pageCount) pageCount = 0xffffffff;
     pageSize = 1;
     programSize = 1;
     eraseSize = 1 << (deviceType->sectorSize + deviceType->pageSize);
     eraseCmd = deviceType->eraseCmd;
-    frequency = MIN(maxSpeed, deviceType->maxSpeed << 10);
-    select();
+    frequency = MIN(maxSpeed, deviceType->maxSpeed << 20);
+    reselect();
     pushByte(0x50);
-    deselect();
-    select();
+    reselect();
     pushByte(0x01);
     pushByte(0x00);
     deselect();
+    stayAwake(oldAwake);
     initialized = true;
     return RESULT_OK;
 }
@@ -99,14 +109,16 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::read(uint32_t page, uint32_t le
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
-    if (!waitIdle()) return RESULT_COMM_ERROR;
+    bool oldAwake = stayAwake(true);
     select();
+    if (!waitIdle(oldAwake)) return RESULT_COMM_ERROR;
     pushByte(0x03);
     pushByte(page >> 16);
     pushByte(page >> 8);
     pushByte(page);
     pushBuffer(NULL, buf, len);
     deselect();
+    stayAwake(oldAwake);
     return RESULT_OK;
 }
 
@@ -114,24 +126,26 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::write(uint32_t page, uint32_t l
 {
     if (!initialized) return RESULT_INVALID_STATE;
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
+    bool oldAwake = stayAwake(true);
+    select();
     while (len)
     {
         int chunklen = MIN(pageSize - (page & (pageSize - 1)), len);
-        if (!waitIdle()) return RESULT_COMM_ERROR;
-        select();
+        if (!waitIdle(oldAwake)) return RESULT_COMM_ERROR;
         pushByte(0x06);
-        deselect();
-        select();
+        reselect();
         pushByte(0x02);
         pushByte(page >> 16);
         pushByte(page >> 8);
         pushByte(page);
         pushBuffer(buf, NULL, chunklen);
-        deselect();
         buf = (void*)(((uintptr_t)buf) + chunklen);
         page += chunklen;
         len -= chunklen;
+        if (len) reselect();
     }
+    deselect();
+    stayAwake(oldAwake);
     return RESULT_OK;
 }
 
@@ -141,20 +155,27 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::erase(uint32_t page, uint32_t l
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (page & (eraseSize - 1)) return RESULT_INVALID_ARGUMENT;
     if (len & (eraseSize - 1)) return RESULT_INVALID_ARGUMENT;
+    bool oldAwake = stayAwake(true);
+    select();
     while (len)
     {
-        if (!waitIdle()) return RESULT_COMM_ERROR;
-        select();
+        if (!waitIdle(oldAwake)) return RESULT_COMM_ERROR;
         pushByte(0x06);
-        deselect();
-        select();
+        reselect();
         pushByte(eraseCmd);
         pushByte(page >> 16);
         pushByte(page >> 8);
         pushByte(page);
-        deselect();
         page += eraseSize;
         len -= eraseSize;
+        if (len) reselect();
     }
+    deselect();
+    stayAwake(oldAwake);
     return RESULT_OK;
+}
+
+bool SPIFLASH_OPTIMIZE SPIFlash::stayAwake(bool on)
+{
+    return SPI::Device::stayAwake(on);
 }
