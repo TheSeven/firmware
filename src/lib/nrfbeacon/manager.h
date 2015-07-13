@@ -80,11 +80,11 @@ namespace NRFBeacon
     protected:
         NRF::Radio* radio;
         const Identification* id;
-        uint8_t idleInterval;  // seconds
-        uint8_t maxTimeout;  // seconds
-        uint8_t localId;
 
     public:
+        uint8_t localId;
+        uint8_t idleInterval;  // seconds
+        uint8_t maxTimeout;  // seconds
         uint8_t payloadLen;
         const void* payload;
         uint16_t interval;  // 10ms steps
@@ -99,8 +99,8 @@ namespace NRFBeacon
 
     public:
         constexpr Manager(NRF::Radio* radio, const Identification* id, uint8_t idleInterval, uint8_t maxTimeout)
-            : radio(radio), id(id), idleInterval(idleInterval), maxTimeout(maxTimeout), localId(0),
-              payloadLen(0), payload(NULL), interval(0), timeout(0), sendId(false) {}
+            : radio(radio), id(id), localId(0), idleInterval(idleInterval), maxTimeout(maxTimeout),
+              payloadLen(0), payload(NULL), interval(idleInterval * 100), timeout(0), sendId(false) {}
         bool processPacket(void* data, int len);
         bool sendBeacon();
         void timeoutExpired();
