@@ -53,6 +53,11 @@ public:
         virtual void setType(unsigned int pin, enum type type) const = 0;
         virtual void setPull(unsigned int pin, enum pull pull) const = 0;
         virtual void setSpecial(unsigned int pin, int function) const = 0;
+#ifdef GPIO_SUPPORT_FAST_MODE
+        virtual bool enableFast(unsigned int pin, bool on) const = 0;
+        virtual bool getLevelFast(unsigned int pin) const = 0;
+        virtual void setLevelFast(unsigned int pin, bool level) const = 0;
+#endif
     };
 
     static bool getLevel(Pin pin);
@@ -64,6 +69,9 @@ public:
     static void configure(Pin pin, enum mode mode, bool level);
     static void configure(Pin pin, int function);
     static void configure(Pin pin, enum mode mode, bool level, enum type type, enum pull pull, int function);
+    static bool enableFast(Pin pin, bool on);
+    static bool getLevelFast(Pin pin);
+    static void setLevelFast(Pin pin, bool level);
 
     static inline void configure(Pin pin, int function, enum type type, enum pull pull)
     {

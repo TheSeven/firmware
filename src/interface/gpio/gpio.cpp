@@ -64,3 +64,34 @@ void GPIO_OPTIMIZE GPIO::configure(Pin pin, enum mode mode, bool level, enum typ
     GPIO_CONTROLLER.setMode(pin.pin, mode);
 }
 
+#ifdef GPIO_SUPPORT_FAST_MODE
+bool GPIO_OPTIMIZE GPIO::enableFast(Pin pin, bool on)
+{
+    return GPIO_CONTROLLER.enableFast(pin.pin, on);
+}
+
+bool GPIO_OPTIMIZE GPIO::getLevelFast(Pin pin)
+{
+    return GPIO_CONTROLLER.getLevelFast(pin.pin);
+}
+
+void GPIO_OPTIMIZE GPIO::setLevelFast(Pin pin, bool level)
+{
+    GPIO_CONTROLLER.setLevelFast(pin.pin, level);
+}
+#else
+bool GPIO_OPTIMIZE GPIO::enableFast(Pin pin, bool on)
+{
+    return false;
+}
+
+bool GPIO_OPTIMIZE GPIO::getLevelFast(Pin pin)
+{
+    return GPIO_CONTROLLER.getLevel(pin.pin);
+}
+
+void GPIO_OPTIMIZE GPIO::setLevelFast(Pin pin, bool level)
+{
+    GPIO_CONTROLLER.setLevel(pin.pin, level);
+}
+#endif

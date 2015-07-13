@@ -227,6 +227,11 @@ namespace STM32
             virtual void setType(unsigned int pin, enum ::GPIO::type type) const;
             virtual void setPull(unsigned int pin, enum ::GPIO::pull pull) const;
             virtual void setSpecial(unsigned int pin, int function) const;
+#ifdef GPIO_SUPPORT_FAST_MODE
+            virtual bool enableFast(unsigned int pin, bool on) const;
+            virtual bool getLevelFast(unsigned int pin) const;
+            virtual void setLevelFast(unsigned int pin, bool level) const;
+#endif
 
             void setSpeed(unsigned int pin, enum Speed speed) const;
             void setSpecial(unsigned int pin, enum Special function) const;

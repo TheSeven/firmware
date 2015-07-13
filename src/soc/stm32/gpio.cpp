@@ -90,6 +90,23 @@ namespace STM32
         setSpecial(pin, (enum Special)(function & 0xf));
     }
     
+#ifdef GPIO_SUPPORT_FAST_MODE
+    bool STM32_GPIO_OPTIMIZE GPIO::PinController::enableFast(unsigned int pin, bool on) const
+    {
+        return clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), on);
+    }
+
+    bool STM32_GPIO_OPTIMIZE GPIO::PinController::getLevelFast(unsigned int pin) const
+    {
+        return (STM32_GPIO_REGS(pin >> 4).IDR.d32 >> (pin & 0xf)) & 1;
+    }
+
+    void STM32_GPIO_OPTIMIZE GPIO::PinController::setLevelFast(unsigned int pin, bool level) const
+    {
+        STM32_GPIO_REGS(pin >> 4).BSRR.d32 = (0x10000 | !!level) << (pin & 0xf);
+    }
+#endif
+
     const GPIO::PinController GPIO::Controller;
 
 }
