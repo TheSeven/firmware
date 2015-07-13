@@ -5,6 +5,11 @@
 #include "interface/spi/spi.h"
 
 
+#ifndef NRF_OPTIMIZE
+#define NRF_OPTIMIZE
+#endif
+
+
 namespace NRF
 {
 

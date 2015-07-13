@@ -55,12 +55,12 @@ const uint8_t NRF::SE8R01::initSequence[] =
 };
 
 
-void NRF::SE8R01::switchBank()
+void NRF_OPTIMIZE NRF::SE8R01::switchBank()
 {
     activate(Feature_SwitchRegisterBank);
 }
 
-void NRF::SE8R01::init()
+void NRF_OPTIMIZE NRF::SE8R01::init()
 {
     if (getStatus().b.regBank) switchBank();
     const uint8_t* ptr = initSequence;
@@ -76,7 +76,7 @@ void NRF::SE8R01::init()
     }
 }
 
-void NRF::SE8R01::configure(Configuration* config)
+void NRF_OPTIMIZE NRF::SE8R01::configure(Configuration* config)
 {
     NRF::SE8R01::Config configOff = { 0 };
     configOff.b.maskDataReceived = true;
@@ -100,7 +100,7 @@ void NRF::SE8R01::configure(Configuration* config)
     writeReg(Reg_Config, &config->config, sizeof(config->config));
 }
 
-NRF::SPI::Status NRF::SE8R01::handleIRQ()
+NRF::SPI::Status NRF_OPTIMIZE NRF::SE8R01::handleIRQ()
 {
     Status status = getStatus();
     uint8_t length = 0;

@@ -4,7 +4,7 @@
 #include "sys/util.h"
 
 
-void NRF::NRF24L01P::configure(Configuration* config)
+void NRF_OPTIMIZE NRF::NRF24L01P::configure(Configuration* config)
 {
     NRF::NRF24L01P::Config configOff = { 0 };
     configOff.b.maskDataReceived = true;
@@ -29,7 +29,7 @@ void NRF::NRF24L01P::configure(Configuration* config)
     writeReg(Reg_Config, &config->config, sizeof(config->config));
 }
 
-NRF::SPI::Status NRF::NRF24L01P::handleIRQ()
+NRF::SPI::Status NRF_OPTIMIZE NRF::NRF24L01P::handleIRQ()
 {
     Status status = getStatus();
     Status result = status;
