@@ -20,6 +20,12 @@ namespace NRFBeacon
             uint16_t type;
             uint16_t version;
         } protocol;
+        struct __attribute__((packed)) Firmware
+        {
+            uint32_t vendor;
+            uint16_t type;
+            uint16_t version;
+        } firmware;
     };
 
     enum MessageType
