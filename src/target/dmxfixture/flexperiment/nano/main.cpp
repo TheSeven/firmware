@@ -45,9 +45,9 @@ int main()
     STM32_DMA1_STREAM2_REGS.CR.d32 = CR.d32;
     STM32_DMA1_STREAM2_REGS.PAR = (uint32_t)&STM32_USART1_REGS.RDR;
     irq_set_priority(usart1_IRQn, 2);
-    irq_set_priority(dma1_stream2_3_IRQn, 10);
+    irq_set_priority(dma1_stream2_3_dma2_stream1_2_IRQn, 10);
     irq_enable(usart1_IRQn, true);
-    irq_enable(dma1_stream2_3_IRQn, true);
+    irq_enable(dma1_stream2_3_dma2_stream1_2_IRQn, true);
 
     while (true) idle();
 }
@@ -78,12 +78,12 @@ extern "C" void usart1_irqhandler()
         if (!good)
         {
             STM32_DMA_REGS(0).IFCR.d32 = 0xf00;
-            irq_clear_pending(dma1_stream2_3_IRQn);
+            irq_clear_pending(dma1_stream2_3_dma2_stream1_2_IRQn);
         }
         else if (STM32_DMA1_STREAM2_REGS.CR.b.EN)
         {
             inData[0][0] = 1;
-            irq_set_pending(dma1_stream2_3_IRQn);
+            irq_set_pending(dma1_stream2_3_dma2_stream1_2_IRQn);
         }
         while (!GPIO::getLevel(PIN_A3));
         CR.b.MINC = true;
@@ -95,7 +95,7 @@ extern "C" void usart1_irqhandler()
     }
 }
 
-extern "C" void dma1_stream2_3_irqhandler()
+extern "C" void dma1_stream2_3_dma2_stream1_2_irqhandler()
 {
     STM32_DMA_REGS(0).IFCR.d32 = 0xf00;
     enter_critical_section();
