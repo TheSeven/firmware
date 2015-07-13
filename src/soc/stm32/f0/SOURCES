@@ -6,3 +6,7 @@ serialnum.cpp
 #ifdef STM32_ENABLE_DMA
 dma.cpp
 #endif
+
+#ifdef STM32_ENABLE_USB
+usb.cpp
+#endif

@@ -1,2 +1,9 @@
+#include "global.h"
+
 ..
 ../../../cpu/arm/cortexm/m0
+
+
+#ifdef STM32_ENABLE_USB
+../../../interface/usb
+#endif
