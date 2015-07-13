@@ -25,7 +25,7 @@ public:
     constexpr CONFIGSTORE_OPTIMIZE ConfigData()
         : ConfigDataHeader(((1ull << 32) >> __builtin_clz(sizeof(T) + 7)) - 8) {}
     T data;
-    uint8_t padding[(sizeof(T) + S + 7) / S * S - sizeof(T) - 8];
+    uint8_t padding[(((1ull << 32) >> __builtin_clz(sizeof(T) + 7)) + S - 1) / S * S - sizeof(T) - 8];
 };
 
 class __attribute__((packed,aligned(4))) ConfigStore
