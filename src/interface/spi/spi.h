@@ -36,6 +36,17 @@ namespace SPI
         void reselect();
         uint8_t pushByte(uint8_t byte);
         void pushBuffer(const void* inbuf, void* outbuf, int len);
+        bool stayAwake(bool on);
+
+    private:
+        bool keepBusActive;
+        bool selected;
+#ifdef GPIO_SUPPORT_FAST_MODE
+        bool oldGPIOFastState;
+#else
+        uint32_t : 8;
+#endif
+        uint32_t : 8;
     };
 
 }
