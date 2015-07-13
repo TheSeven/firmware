@@ -4,6 +4,11 @@
 #include "device/nrf/nrf24l01p/nrf24l01p.h"
 
 
+#ifndef NRFBEACON_OPTIMIZE
+#define NRFBEACON_OPTIMIZE
+#endif
+
+
 namespace NRFBeacon
 {
     struct __attribute__((packed)) Identification

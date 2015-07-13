@@ -3,7 +3,7 @@
 #include "sys/util.h"
 
 
-bool NRFBeacon::Manager::processPacket(void* ptr, int len)
+bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::processPacket(void* ptr, int len)
 {
     Message* data = (Message*)ptr;
     if (len < 4 || data->protocol != 0xffff) return false;
@@ -36,7 +36,7 @@ bool NRFBeacon::Manager::processPacket(void* ptr, int len)
     return false;
 }
 
-bool NRFBeacon::Manager::sendBeacon()
+bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::sendBeacon()
 {
     Message beacon;
     beacon.protocol = 0xffff;
@@ -57,7 +57,7 @@ bool NRFBeacon::Manager::sendBeacon()
     return true;
 }
 
-void NRFBeacon::Manager::timeoutExpired()
+void NRFBEACON_OPTIMIZE NRFBeacon::Manager::timeoutExpired()
 {
     timeout = 0;
     interval = idleInterval * 100;

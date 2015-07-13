@@ -3,7 +3,7 @@
 #include "device/nrf/nrf24l01p/nrf24l01p.h"
 
 
-void NRFBeacon::NRF24L01P::applyRadioSettings(void* settings, int len)
+void NRFBEACON_OPTIMIZE NRFBeacon::NRF24L01P::applyRadioSettings(void* settings, int len)
 {
     NRF::NRF24L01P* radio = (NRF::NRF24L01P*)this->radio;
     RadioSettings* data = (RadioSettings*)settings;
@@ -26,7 +26,7 @@ void NRFBeacon::NRF24L01P::applyRadioSettings(void* settings, int len)
     radio->configure(&nrfConfig);
 }
 
-void NRFBeacon::NRF24L01P::resetRadioSettings()
+void NRFBEACON_OPTIMIZE NRFBeacon::NRF24L01P::resetRadioSettings()
 {
     NRF::NRF24L01P* radio = (NRF::NRF24L01P*)this->radio;
     static const uint8_t address[] = { 0xDD, 0x37, 0xC4 };
