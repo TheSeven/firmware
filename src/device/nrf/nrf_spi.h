@@ -45,6 +45,9 @@ namespace NRF
         Status writePacketNoAck(const void* data, int len);
         Status getStatus();
         Status activate(uint8_t feature);
+
+    protected:
+        bool stayAwake(bool on);
     };
 
 }

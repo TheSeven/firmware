@@ -76,3 +76,8 @@ NRF::SPI::Status NRF_OPTIMIZE NRF::SPI::activate(uint8_t feature)
 {
     return access(0x150, &feature, 1);
 }
+
+bool NRF_OPTIMIZE NRF::SPI::stayAwake(bool on)
+{
+    return SPI::Device::stayAwake(on);
+}

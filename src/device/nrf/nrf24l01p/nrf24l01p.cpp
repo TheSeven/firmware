@@ -10,13 +10,13 @@ void NRF_OPTIMIZE NRF::NRF24L01P::configure(Configuration* config)
     configOff.b.maskDataReceived = true;
     configOff.b.maskDataSent = true;
     configOff.b.maskMaxRetrans = true;
+    stayAwake(true);
     writeReg(Reg_Config, &configOff, sizeof(configOff));
     configOff.d8 = config->config.d8;
     configOff.b.powerUp = false;
     flushTx();
     Status status = flushRx();
     writeReg(Reg_Status, &status, sizeof(status));
-
     writeReg(Reg_FeatureCtl, &config->featureCtl, sizeof(config->featureCtl));
     writeReg(Reg_AutoAckCtl, &config->autoAckCtl, sizeof(config->autoAckCtl));
     writeReg(Reg_RxPipeEnable, &config->rxPipeEnable, sizeof(config->rxPipeEnable));
@@ -27,10 +27,13 @@ void NRF_OPTIMIZE NRF::NRF24L01P::configure(Configuration* config)
     writeReg(Reg_DynLengthCtl, &config->dynLengthCtl, sizeof(config->dynLengthCtl));
     writeReg(Reg_Config, &configOff, sizeof(configOff));
     writeReg(Reg_Config, &config->config, sizeof(config->config));
+    stayAwake(false);
 }
+
 
 NRF::SPI::Status NRF_OPTIMIZE NRF::NRF24L01P::handleIRQ()
 {
+    stayAwake(true);
     Status status = getStatus();
     Status result = status;
     uint8_t length = 0;
@@ -41,16 +44,18 @@ NRF::SPI::Status NRF_OPTIMIZE NRF::NRF24L01P::handleIRQ()
     if (status.b.maxRetrans || status.b.dataSent || status.b.dataReceived)
         result = writeReg(Reg_Status, &status, sizeof(status));
     if (status.b.dataReceived)
-        do
+        while (true)
         {
+            stayAwake(true);
             FifoStatus fifoStatus;
             result = readReg(Reg_FifoStatus, &fifoStatus, sizeof(fifoStatus));
             if (fifoStatus.b.rxEmpty) break;
             getRxPacketSize(&length);
             readPacket(data, length);
+            stayAwake(false);
             if (packetReceived) packetReceived(status.b.rxPipe, data, length);
         }
-        while (true);
+    stayAwake(false);
     if (packetTransmitted && (status.b.maxRetrans || status.b.dataSent))
         packetTransmitted(!status.b.maxRetrans, txObserve.b.retransCount);
     return result;
