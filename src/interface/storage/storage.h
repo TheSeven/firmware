@@ -29,6 +29,7 @@ public:
         RESULT_COMM_ERROR,
         RESULT_DATA_ERROR,
         RESULT_UNSUPPORTED,
+        RESULT_WRITE_PROTECTED,
     };
 
     uint32_t pageCount;
