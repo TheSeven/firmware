@@ -41,6 +41,7 @@ public:
 
 private:
     bool waitIdle(bool oldAwake);
+    bool enableWrite(bool oldAwake);
     int initSpeed;
     int maxSpeed;
     uint8_t eraseCmd;

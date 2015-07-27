@@ -32,10 +32,23 @@ bool SPIFLASH_OPTIMIZE SPIFlash::waitIdle(bool oldAwake)
     while (!TIMEOUT_EXPIRED(timeout))
     {
         pushByte(0x05);
-        uint8_t result = pushByte(0);
+        uint8_t status = pushByte(0);
         reselect();
-        if (!(result & 1)) return true;
+        if (!(status & 1)) return true;
     }
+    deselect();
+    stayAwake(oldAwake);
+    return false;
+}
+
+bool SPIFLASH_OPTIMIZE SPIFlash::enableWrite(bool oldAwake)
+{
+    pushByte(0x06);
+    reselect();
+    pushByte(0x05);
+    uint8_t status = pushByte(0);
+    reselect();
+    if (status & 2) return true;
     deselect();
     stayAwake(oldAwake);
     return false;
@@ -132,8 +145,7 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::write(uint32_t page, uint32_t l
     {
         int chunklen = MIN(pageSize - (page & (pageSize - 1)), len);
         if (!waitIdle(oldAwake)) return RESULT_COMM_ERROR;
-        pushByte(0x06);
-        reselect();
+        if (!enableWrite(oldAwake)) return RESULT_WRITE_PROTECTED;
         pushByte(0x02);
         pushByte(page >> 16);
         pushByte(page >> 8);
@@ -160,8 +172,7 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::erase(uint32_t page, uint32_t l
     while (len)
     {
         if (!waitIdle(oldAwake)) return RESULT_COMM_ERROR;
-        pushByte(0x06);
-        reselect();
+        if (!enableWrite(oldAwake)) return RESULT_WRITE_PROTECTED;
         pushByte(eraseCmd);
         pushByte(page >> 16);
         pushByte(page >> 8);
