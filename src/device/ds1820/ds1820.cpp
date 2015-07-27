@@ -7,6 +7,7 @@
 DS1820::DS1820(const OneWire::Bus* bus, uint64_t deviceId) : Device(bus, deviceId)
 {
     readPowerSupply();
+    convertTemperature();
 }
 
 int DS1820_OPTIMIZE DS1820::readTemperature()
