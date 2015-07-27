@@ -1,0 +1,4 @@
+#include "global.h"
+
+../../board/flexperiment/nano
+../../device/nrf/nrf24l01p
