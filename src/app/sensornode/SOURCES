@@ -1,0 +1,26 @@
+#include "global.h"
+
+common.cpp
+main.cpp
+radio.cpp
+storage.cpp
+
+#ifdef SENSORNODE_RADIO_NRF24L01P
+radio/nrf24l01p.cpp
+#endif
+
+#ifdef SENSORNODE_STORAGE_SPIFLASH
+storage/spiflash.cpp
+#endif
+
+#ifdef SENSORNODE_RTC_STM32F0
+rtc/stm32f0.cpp
+#endif
+
+#ifdef SENSORNODE_SENSOR_POWERSUPPLY_FPNANO
+sensor/powersupply/fpnano.cpp
+#endif
+
+#ifdef SENSORNODE_SENSOR_TEMPERATURE_DS1820
+sensor/temperature/ds1820.cpp
+#endif

@@ -1,0 +1,16 @@
+#include "global.h"
+
+
+#ifdef SENSORNODE_RADIO_NRF24L01P
+../../lib/nrfbeacon/nrf24l01p
+#endif
+
+#ifdef SENSORNODE_STORAGE_SPIFLASH
+../../device/spiflash
+../../lib/flashpartition
+../../lib/configstore
+#endif
+
+#ifdef SENSORNODE_SENSOR_TEMPERATURE_DS1820
+../../device/ds1820
+#endif
