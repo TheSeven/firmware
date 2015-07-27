@@ -9,3 +9,5 @@ dmxfixture/flexperiment/nano/pwm
 dmxfixture/flexperiment/nano/tm1829
 nrftest/tx
 nrftest/rx
+sensornode/fpnano/temperature
+nrfbridge
