@@ -72,22 +72,23 @@ bool SPI_OPTIMIZE SPI::Device::stayAwake(bool on)
     if (on)
     {
         if (keepBusActive) return true;
+        bus->select();
+        bus->setFrequency(frequency);
 #ifdef GPIO_SUPPORT_FAST_MODE
         oldGPIOFastState = GPIO::enableFast(cspin, true);
 #endif
-        select();
     }
     else
     {
         if (!keepBusActive) return false;
+#ifdef GPIO_SUPPORT_FAST_MODE
+        GPIO::enableFast(cspin, oldGPIOFastState);
+#endif
         if (!selected)
         {
             bus->pushBuffer(NULL, NULL, deselbytes);
             bus->deselect();
         }
-#ifdef GPIO_SUPPORT_FAST_MODE
-        GPIO::enableFast(cspin, oldGPIOFastState);
-#endif
     }
     keepBusActive = on;
     return !on;
