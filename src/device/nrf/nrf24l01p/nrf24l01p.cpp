@@ -53,7 +53,7 @@ NRF::SPI::Status NRF_OPTIMIZE NRF::NRF24L01P::handleIRQ()
             getRxPacketSize(&length);
             readPacket(data, length);
             stayAwake(false);
-            if (packetReceived) packetReceived(status.b.rxPipe, data, length);
+            if (packetReceived) packetReceived(result.b.rxPipe, data, length);
         }
     stayAwake(false);
     if (packetTransmitted && (status.b.maxRetrans || status.b.dataSent))
