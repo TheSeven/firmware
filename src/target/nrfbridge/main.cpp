@@ -42,8 +42,13 @@ uint8_t discardBytes = 0;
 
 void initRadio()
 {
-    static const uint8_t address[] = { 0xDD, 0x37, 0xC4 };
+    static uint8_t address[] = { 0xf0, 0x00, 0x00 };
     radio.setTxAddress(address, sizeof(address));
+    for (int i = 1; i < 6; i++)
+    {
+        address[0] = 0xf0 + i;
+        radio.setRxAddress(i, address, sizeof(address));
+    }
     NRF::NRF24L01P::Configuration nrfConfig = { 0 };
     nrfConfig.config.b.powerUp = true;
     nrfConfig.config.b.role = nrfConfig.config.b.Role_PRX;
@@ -65,7 +70,7 @@ void initRadio()
 
 void initUART()
 {
-    STM32::UART::UART1.configure(1500000, 1000, {STM32::UART::Config::StopBits1_0, STM32::UART::Config::ParityNone, false, false, false});
+    STM32::UART::UART1.configure(1200000, 1000, {STM32::UART::Config::StopBits1_0, STM32::UART::Config::ParityNone, false, false, false});
 }
 
 
@@ -81,21 +86,36 @@ int main()
         int av;
         if ((av = buf.readAvailable()))
         {
-            if (discardBytes) discardBytes--;
+            if (discardBytes)
+            {
+                buf.read();
+                discardBytes--;
+                continue;
+            }
             if (!packetPos)
             {
                 *packet = buf.read();
-                if (*packet > 64)
+                if (*packet > 63)
                 {
                     discardBytes = 64;
-                    *packet = 0;
+                    for (int i = 0; i < 80; i++) uart->bwTx(0xff);
+                    continue;
                 }
                 else if (*packet) packetPos++;
                 else uart->bwTx(0);
+                continue;
             }
-            else if (packetPos < *packet) packetPos += buf.read(&packet[packetPos], MIN(av, *packet - packetPos));
-            if (packetPos && packetPos >= *packet)
+            else if (packetPos < *packet + 1) packetPos += buf.read(&packet[packetPos], MIN(av, *packet - packetPos + 1));
+            if (packetPos && packetPos >= *packet + 1)
             {
+                uint8_t csum = 0;
+                for (int i = 1; i < packetPos; i++) csum += packet[i];
+                if (csum)
+                {
+                    discardBytes = 64;
+                    for (int i = 0; i < 80; i++) uart->bwTx(0xff);
+                    continue;
+                }
                 packetPos = 0;
                 if (*packet >= 2)
                     switch (packet[1])
@@ -109,8 +129,9 @@ int main()
                             radio.flushTx();
                             uart->bwTx(2);
                             uart->bwTx(TxFlushed);
+                            uart->bwTx(-TxFlushed);
                         }
-                        radio.transmit(((int8_t*)packet)[2], &packet[3], *packet - 3);
+                        else radio.transmit(((int8_t*)packet)[2], &packet[3], *packet - 3);
                         break;
                     }
                     case TxFlush:
@@ -118,6 +139,7 @@ int main()
                         radio.flushTx();
                         uart->bwTx(2);
                         uart->bwTx(TxFlushed);
+                        uart->bwTx(-TxFlushed);
                         break;
                     case ConfigRadio:
                     {
@@ -160,10 +182,13 @@ void transmittedHandler(bool success, int retransmissions)
         radio.flushTx();
         uart->bwTx(2);
         uart->bwTx(TxFlushed);
+        uart->bwTx(-TxFlushed);
     }
+    uint8_t arg = (!success << 7) | retransmissions;
     uart->bwTx(3);
     uart->bwTx(TxDone);
-    uart->bwTx((!success << 7) | retransmissions);
+    uart->bwTx(arg);
+    uart->bwTx(0 - TxDone - arg);
 }
 
 
@@ -172,5 +197,11 @@ void receivedHandler(int pipe, uint8_t* data, int length)
     uart->bwTx(length + 3);
     uart->bwTx(RxPacket);
     uart->bwTx(pipe);
-    while (length--) uart->bwTx(*data++);
+    uint8_t csum = 0 - RxPacket - pipe;
+    while (length--)
+    {
+        csum -= *data;
+        uart->bwTx(*data++);
+    }
+    uart->bwTx(csum);
 }
