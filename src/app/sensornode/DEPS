@@ -14,3 +14,7 @@
 #ifdef SENSORNODE_SENSOR_TEMPERATURE_DS1820
 ../../device/ds1820
 #endif
+
+#if defined(SENSORNODE_SENSOR_TEMPERATURE_HTU21D) || defined(SENSORNODE_SENSOR_HUMIDITY_HTU21D)
+../../device/htu21d
+#endif

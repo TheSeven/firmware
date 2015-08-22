@@ -28,3 +28,11 @@ sensor/powersupply/fpnanobat.cpp
 #ifdef SENSORNODE_SENSOR_TEMPERATURE_DS1820
 sensor/temperature/ds1820.cpp
 #endif
+
+#ifdef SENSORNODE_SENSOR_TEMPERATURE_HTU21D
+sensor/temperature/htu21d.cpp
+#endif
+
+#ifdef SENSORNODE_SENSOR_HUMIDITY_HTU21D
+sensor/humidity/htu21d.cpp
+#endif
