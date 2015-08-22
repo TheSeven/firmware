@@ -90,13 +90,13 @@ void DS1820_OPTIMIZE DS1820::convertTemperature()
     writeByte(0x44);
     if (externalPower)
     {
-        int timeout = TIMEOUT_SETUP((1 << resolution) / 5);
+        int timeout = TIMEOUT_SETUP((1 << (resolution + 10)) / 5);
         while (!TIMEOUT_EXPIRED(timeout) && !readBit()) wait(timeout);
     }
     else
     {
         turnOnPower();
-        int timeout = TIMEOUT_SETUP((1 << resolution) / 5);
+        int timeout = TIMEOUT_SETUP((1 << (resolution + 10)) / 5);
         while (!TIMEOUT_EXPIRED(timeout)) wait(timeout);
         turnOffPower();
     }
