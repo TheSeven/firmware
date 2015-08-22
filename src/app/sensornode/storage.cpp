@@ -116,11 +116,12 @@ void SENSORNODE_STORAGE_OPTIMIZE writeMeta(uint32_t unixTime, uint16_t clientDev
 }
 
 
-void SENSORNODE_STORAGE_OPTIMIZE cacheHistoryDataBlock(uint32_t address)
+void SENSORNODE_STORAGE_OPTIMIZE cacheHistoryDataBlock(int address)
 {
     uint32_t size = storageDriver->dataStorage->pageCount;
-    if (address >= size) address -= size;
-    if (!histPtr.d.invalid && address == histPtr.address) return;
+    if (address >= (int)size) address -= size;
+    else if (address < 0) address += size;
+    if (!histPtr.d.invalid && (uint32_t)address == histPtr.address) return;
     histPtr.address = address;
     if (storageDriver->dataStorage->read(histPtr.address, sizeof(histPtr.d), &histPtr.d) != Storage::RESULT_OK) hang();
 }
