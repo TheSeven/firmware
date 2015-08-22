@@ -1,6 +1,5 @@
 #include "global.h"
 
-onewire.cpp
 serialnum.cpp
 sysinit.cpp
 radio.cpp
