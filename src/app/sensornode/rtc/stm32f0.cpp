@@ -15,15 +15,22 @@
 
 class SensorNodeRTCSTM32 : public SensorNodeRTCDriver
 {
+public:
+    uint16_t calibInterval = 300;
+
+private:
     uint16_t rtcFrequency;
     int lastTime;
     int timeOffset;
+    int lastCalib;
 
     int getRTCFrequency();
     void reset();
+    int getTimeInternal();
     int getTime();
     void sleepUntil(int time);
     void getState(RTCState* state);
+    void calibrate();
 };
 
 
@@ -68,6 +75,40 @@ int SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::getRTCFrequency()
 }
 
 
+void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::calibrate()
+{
+    int newFreq = (getRTCFrequency() >> 2) << 2;
+    if (rtcFrequency == newFreq) return;
+    int capture;
+    do capture = STM32_RTC_REGS.SSR;
+    while (capture < 100);
+    int start = read_usec_timer();
+    union STM32_RTC_REG_TYPE::ISR ISR = { 0 };
+    ISR.b.INIT = true;
+    STM32_RTC_REGS.ISR.d32 = ISR.d32;
+    int target = capture * newFreq / rtcFrequency;
+    rtcFrequency = newFreq;
+    while (!STM32_RTC_REGS.ISR.b.INITF);
+    union STM32_RTC_REG_TYPE::PRER PRER = { 0 };
+    PRER.b.PREDIV_A = (1 << 2) - 1;
+    PRER.b.PREDIV_S = (rtcFrequency >> 2) - 1;
+    STM32_RTC_REGS.PRER.d32 = PRER.d32;
+    STM32_RTC_REGS.ISR.d32 = 0;
+    int tmp;
+    do tmp = STM32_RTC_REGS.SSR;
+    while (tmp == capture);
+    do capture = STM32_RTC_REGS.SSR;
+    while (tmp == capture);
+    tmp = read_usec_timer();
+    target -= (tmp - start) * (rtcFrequency >> 2) / 1000000;
+    union STM32_RTC_REG_TYPE::SHIFTR SHIFTR = { 0 };
+    SHIFTR.b.ADD1S = true;
+    SHIFTR.b.SUBFS = (rtcFrequency >> 2) - capture + target;
+    STM32_RTC_REGS.SHIFTR.d32 = SHIFTR.d32;
+    discard(STM32_RTC_REGS.DR.d32);
+}
+
+
 void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::reset()
 {
     while (!STM32_RCC_REGS.CSR.b.LSIRDY);
@@ -97,16 +138,32 @@ void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::reset()
     STM32_EXTI_REGS.IMR = (1 << 17) | (1 << 0);
     irq_enable(rtc_IRQn, true);
     irq_enable(exti0_1_IRQn, true);
+    lastTime = 0;
+    timeOffset = 0;
+    lastCalib = 0;
 }
 
 
-int SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::getTime()
+int SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::getTimeInternal()
 {
     union STM32_RTC_REG_TYPE::TR TR = { STM32_RTC_REGS.TR.d32 };
     int time = ((TR.b.MNT * 10 + TR.b.MNU) * 6 + TR.b.ST) * 10 + TR.b.SU;
     if (time < lastTime) timeOffset += 3600;
     lastTime = time;
-    return timeOffset + time;
+    time += timeOffset;
+    return time;
+}
+
+
+int SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::getTime()
+{
+    int time = getTimeInternal();
+    if (time > lastCalib + calibInterval)
+    {
+        lastCalib = time;
+        calibrate();
+    }
+    return time;
 }
 
 
