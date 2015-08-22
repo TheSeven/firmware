@@ -50,7 +50,6 @@ namespace I2C
     class __attribute__((packed,aligned(4))) Bus
     {
     public:
-        virtual int setFrequency(int frequency) = 0;
         virtual enum Result txn(const Transaction* txn) = 0;
         enum Result readRegs(int address, int reg, void* buf, int len);
         enum Result writeRegs(int address, int reg, const void* buf, int len);
