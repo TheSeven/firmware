@@ -90,6 +90,7 @@ int main()
             {
                 buf.read();
                 discardBytes--;
+                packetPos = 0;
                 continue;
             }
             if (!packetPos)
