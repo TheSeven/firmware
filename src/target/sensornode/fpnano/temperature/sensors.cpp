@@ -2,13 +2,15 @@
 #include "app/sensornode/sensor.h"
 #include "app/sensornode/common.h"
 #include "app/sensornode/storage.h"
-#include "app/sensornode/sensor/powersupply/fpnano.h"
+#include "app/sensornode/sensor/powersupply/stm32vcc.h"
+#include "app/sensornode/sensor/powersupply/fpnanobat.h"
 #include "app/sensornode/sensor/temperature/ds1820.h"
 
 
 SensorNodeSensorDriver* sensors[SENSORNODE_MAXSENSORS];
-SensorNodeSensorPowerSupplyFPNano psuSensor;
-SensorNodeSensorTemperatureDS1820 tempSensor[SENSORNODE_MAXSENSORS - 1];
+SensorNodeSensorPowerSupplySTM32VCC vccSensor;
+SensorNodeSensorPowerSupplyFPNanoBat batSensor;
+SensorNodeSensorTemperatureDS1820 tempSensor[SENSORNODE_MAXSENSORS - 2];
 OneWire::Bus onewire(ONEWIRE_PIN);
 
 static const char hextable[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -18,15 +20,19 @@ void SENSORNODE_TARGET_OPTIMIZE sensornode_init_sensors()
 {
     sensorCount = 0;
 
-    new(&psuSensor) SensorNodeSensorPowerSupplyFPNano(config.data.boardConfig.sensorInterval[0],
-                                                      config.data.boardConfig.sensorOffset[0]);
-    memcpy(psuSensor.meta.attr.sensorName, "Power supply", 13);
-    sensors[sensorCount++] = &psuSensor;
+    new(&vccSensor) SensorNodeSensorPowerSupplySTM32VCC(config.data.boardConfig.sensorInterval[0],
+                                                        config.data.boardConfig.sensorOffset[0]);
+    memcpy(vccSensor.meta.attr.sensorName, "System voltage", 14);
+    sensors[sensorCount++] = &vccSensor;
+    new(&batSensor) SensorNodeSensorPowerSupplyFPNanoBat(&vccSensor, config.data.boardConfig.sensorInterval[1],
+                                                         config.data.boardConfig.sensorOffset[1]);
+    memcpy(batSensor.meta.attr.sensorName, "Battery voltage", 15);
+    sensors[sensorCount++] = &batSensor;
 
     sensornode_enable_sensors();
     while (sensorCount < ARRAYLEN(sensors))
     {
-        int i = sensorCount - 1;
+        int i = sensorCount - 2;
         uint64_t* deviceId = onewire.discoverDevice();
         if (!deviceId) break;
         new(&tempSensor[i]) SensorNodeSensorTemperatureDS1820(&onewire, *deviceId,

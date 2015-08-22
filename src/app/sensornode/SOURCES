@@ -17,8 +17,12 @@ storage/spiflash.cpp
 rtc/stm32f0.cpp
 #endif
 
-#ifdef SENSORNODE_SENSOR_POWERSUPPLY_FPNANO
-sensor/powersupply/fpnano.cpp
+#ifdef SENSORNODE_SENSOR_POWERSUPPLY_STM32VCC
+sensor/powersupply/stm32vcc.cpp
+#endif
+
+#ifdef SENSORNODE_SENSOR_POWERSUPPLY_FPNANOBAT
+sensor/powersupply/fpnanobat.cpp
 #endif
 
 #ifdef SENSORNODE_SENSOR_TEMPERATURE_DS1820
