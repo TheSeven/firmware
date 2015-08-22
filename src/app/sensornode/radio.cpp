@@ -173,7 +173,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
                             - sizeof(packet->args.config.payload) + sizeof(packet->args.config.payload.historySensorConfig);
                 break;
             case RadioPacket::LiveSensorConfig:
-                if (length != 4 || packet->args.configGet.id >= SENSORNODE_MAXSENSORS)
+                if (length != 4 || packet->args.configGet.id >= sensorCount)
                 {
                     length = -RadioPacket::StatusInvalidArgument;
                     break;
@@ -229,7 +229,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
             switch (packet->args.configSet.type)
             {
             case RadioPacket::LiveSensorConfig:
-                if (length < 16 || packet->args.configSet.id >= SENSORNODE_MAXSENSORS)
+                if (length < 16 || packet->args.configSet.id >= sensorCount)
                 {
                     packet->args.configResult.status = RadioPacket::StatusInvalidArgument;
                     break;
