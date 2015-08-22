@@ -4,10 +4,9 @@
 #include "sys/util.h"
 
 
-DS1820::DS1820(const OneWire::Bus* bus, uint64_t deviceId) : Device(bus, deviceId)
+DS1820_OPTIMIZE DS1820::DS1820(const OneWire::Bus* bus, uint64_t deviceId) : Device(bus, deviceId)
 {
     readPowerSupply();
-    convertTemperature();
 }
 
 int DS1820_OPTIMIZE DS1820::readTemperature()
@@ -17,7 +16,7 @@ int DS1820_OPTIMIZE DS1820::readTemperature()
 
 int DS1820_OPTIMIZE DS1820::scaleRawTemperature(int data)
 {
-     return (data * 1000) >> 4;
+     return (((data << 20) >> 20) * 1000) >> 4;
 }
 
 int DS1820_OPTIMIZE DS1820::readRawTemperature()
@@ -26,6 +25,7 @@ int DS1820_OPTIMIZE DS1820::readRawTemperature()
     uint16_t data;
     convertTemperature();
     readScratchpad((uint8_t*)&data, 2);
+    data = (data & 0xfff) | ((resolution - 9) << 12) | externalPower << 14;
     return data;
 }
 
