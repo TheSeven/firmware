@@ -46,4 +46,5 @@ private:
     int maxSpeed;
     uint8_t eraseCmd;
     bool initialized;
+    bool sleeping;
 };

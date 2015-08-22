@@ -21,7 +21,7 @@ const struct SPIFlash::DeviceType SPIFlash::deviceTypes[] =
 };
 
 SPIFLASH_OPTIMIZE SPIFlash::SPIFlash(const SPI::Bus* bus, GPIO::Pin cspin, int initSpeed, int maxSpeed)
-    : Device(bus, cspin, initSpeed), initSpeed(initSpeed), maxSpeed(maxSpeed)
+    : Device(bus, cspin, initSpeed), initSpeed(initSpeed), maxSpeed(maxSpeed), sleeping(true)
 {
     reset();
 }
@@ -188,5 +188,21 @@ enum Storage::Result SPIFLASH_OPTIMIZE SPIFlash::erase(uint32_t page, uint32_t l
 
 bool SPIFLASH_OPTIMIZE SPIFlash::stayAwake(bool on)
 {
-    return SPI::Device::stayAwake(on);
+    if (sleeping == !on) return on;
+    if (!on)
+    {
+        select();
+        pushByte(0xb9);
+        deselect();
+    }
+    SPI::Device::stayAwake(on);
+    if (on)
+    {
+        select();
+        pushByte(0xab);
+        deselect();
+        udelay(3);
+    }
+    sleeping = !on;
+    return !on;
 }
