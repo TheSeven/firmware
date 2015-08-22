@@ -13,8 +13,10 @@ void SENSORNODE_CORE_OPTIMIZE startMeasurement()
 {
     measurementId++;
     liveData.measId = measurementId;
+    storageDriver->stayAwake(true);
     makeSpaceForSensorMeta();  // Do power-hungry erase here, to catch low battery conditions before writing meta entry
     writeMeta(0, 0, 0);
+    storageDriver->stayAwake(false);
     rtcDriver->reset();
     for (int i = 0; i < sensorCount; i++)
     {
@@ -55,13 +57,19 @@ int SENSORNODE_CORE_OPTIMIZE main()
 
         handleRadio();
 
-        sensornode_enable_sensors();
+        bool first = true;
         int nextSensor = now + 65536;
         for (int i = 0; i < sensorCount; i++)
         {
             if (!sensors[i]->meta.attr.interval) continue;
             if (!TIME_AFTER(sensors[i]->nextTime, now))
             {
+                if (first)
+                {
+                    first = false;
+                    storageDriver->stayAwake(true);
+                    sensornode_enable_sensors();
+                }
                 uint32_t value = sensors[i]->readValue();
                 int offset = sensors[i]->meta.offset;
                 int len = sensors[i]->meta.attr.bytesPerPoint;
@@ -76,7 +84,11 @@ int SENSORNODE_CORE_OPTIMIZE main()
             }
             if (sensors[i]->nextTime < nextSensor) nextSensor = sensors[i]->nextTime;
         }
-        sensornode_disable_sensors();
+        if (!first)
+        {
+            sensornode_disable_sensors();
+            storageDriver->stayAwake(false);
+        }
 
         enter_critical_section();
         if (radioDriver->detectIRQ()) continue;
