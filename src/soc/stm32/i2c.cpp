@@ -1,16 +1,11 @@
 #include "global.h"
 #include "soc/stm32/i2c.h"
 #include "soc/stm32/i2c_regs.h"
+#include "soc/stm32/f2/rcc.h"
 #include "cpu/arm/cortexm/irq.h"
 #include "cpu/arm/cortexm/cmsis.h"
 #include "interface/clockgate/clockgate.h"
 #include "sys/util.h"
-
-#if defined(SOC_STM32F0)
-#include "soc/stm32/f0/rcc.h"
-#elif defined(SOC_STM32F2) || defined(SOC_STM32F4)
-#include "soc/stm32/f2/rcc.h"
-#endif
 
 
 namespace STM32
@@ -22,7 +17,7 @@ namespace STM32
         { i2c3_ev_IRQn, i2c3_er_IRQn },
     };
 
-    int I2C::setFrequency(int frequency)
+    enum ::I2C::Result I2C::setFrequency(int frequency)
     {
         volatile STM32_I2C_REG_TYPE* regs = &STM32_I2C_REGS(index);
         int baseclock = RCC::getAPBClockFrequency(RCC::APB1);

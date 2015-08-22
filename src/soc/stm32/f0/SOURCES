@@ -10,3 +10,7 @@ dma.cpp
 #ifdef STM32_ENABLE_USB
 usb.cpp
 #endif
+
+#ifdef STM32_ENABLE_I2C
+i2c.cpp
+#endif
