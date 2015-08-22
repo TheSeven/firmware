@@ -42,7 +42,6 @@ void SENSORNODE_TARGET_OPTIMIZE sensornode_powerdown()
     STM32_RCC_REGS.CSR.d32 = CSR.d32;
     clockgate_enable(STM32_PWR_CLOCKGATE, true);
     union STM32_PWR_REG_TYPE::CR CR = { 0 };
-    CR.b.PDDS = true;
     CR.b.LPDS = true;
     CR.b.CWUF = true;
     STM32_PWR_REGS.CR.d32 = CR.d32;
