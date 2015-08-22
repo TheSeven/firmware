@@ -48,8 +48,10 @@ uint32_t histLastMeta;
 
 void SENSORNODE_STORAGE_OPTIMIZE eraseAllData()
 {
+    storageDriver->stayAwake(true);
     storageDriver->metaStorage->erase(0, storageDriver->metaStorage->pageCount);
     storageDriver->dataStorage->erase(0, storageDriver->dataStorage->pageCount);
+    storageDriver->stayAwake(false);
 }
 
 void SENSORNODE_STORAGE_OPTIMIZE makeSpaceForSensorMeta()
