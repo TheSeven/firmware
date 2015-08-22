@@ -3,6 +3,7 @@
 #include "common.h"
 #include "sensor.h"
 #include "storage.h"
+#include "rtc.h"
 #include "lib/nrfbeacon/manager.h"
 
 
@@ -50,6 +51,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
     enum BoardConfigParameter
     {
         CurrentMeasTime = 0x00,
+        CurrentRtcState = 0x01,
         BeaconDefaultConfig = 0xff,
     };
 
@@ -94,6 +96,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
             uint32_t currentMeasId;
             uint32_t currentMeasTime;
         } currentMeasTime;
+        RTCState currentRtcState;
         struct __attribute__((packed))
         {
             uint8_t maxTimeout;

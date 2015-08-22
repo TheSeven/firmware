@@ -23,6 +23,7 @@ class SensorNodeRTCSTM32 : public SensorNodeRTCDriver
     void reset();
     int getTime();
     void sleepUntil(int time);
+    void getState(RTCState* state);
 };
 
 
@@ -139,6 +140,15 @@ void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::sleepUntil(int time)
         SCB->SCR = 0;
     }
     leave_critical_section();
+}
+
+
+void SensorNodeRTCSTM32::getState(RTCState* state)
+{
+    state->frequency = rtcFrequency;
+    state->subsecond = rtcFrequency - (STM32_RTC_REGS.SSR << 2);
+    state->time = getTimeInternal();
+    discard(STM32_RTC_REGS.DR.d32);
 }
 
 

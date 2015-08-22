@@ -198,6 +198,16 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
                     packet->args.config.payload.currentMeasTime.currentMeasId = measurementId;
                     packet->args.config.payload.currentMeasTime.currentMeasTime = measurementTime;
                     break;
+                case RadioPacket::CurrentRtcState:
+                    if (length != 4)
+                    {
+                        length = -RadioPacket::StatusInvalidArgument;
+                        break;
+                    }
+                    length = sizeof(*packet) - sizeof(packet->args) + sizeof(packet->args.config)
+                           - sizeof(packet->args.config.payload) + sizeof(packet->args.config.payload.currentRtcState);
+                    rtcDriver->getState(&packet->args.config.payload.currentRtcState);
+                    break;
                 case RadioPacket::BeaconDefaultConfig:
                     if (length != 4)
                     {
