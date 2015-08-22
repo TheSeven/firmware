@@ -35,6 +35,7 @@ void SENSORNODE_CORE_OPTIMIZE updateLiveDataSize()
         uint32_t len = sensors[i]->meta.attr.bytesPerPoint;
         if (offset + len > liveDataSize && offset + len <= sizeof(liveData.sensorData)) liveDataSize = offset + len;
     }
+    memset(liveData.sensorData, 0xff, liveDataSize);
     radioDriver->beacon->payloadLen = liveDataSize ? liveDataSize + 4 : 0;
 }
 
@@ -93,5 +94,3 @@ int SENSORNODE_CORE_OPTIMIZE main()
         leave_critical_section();
     }
 }
-
-
