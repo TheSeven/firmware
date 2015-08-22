@@ -47,10 +47,11 @@ bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::sendBeacon()
         memcpy(&beacon.msg.beacon.payload, id, sizeof(*id));
         radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + sizeof(*id));
     }
-    else if (localId && payload && payloadLen)
+    else if (localId)
     {
         beacon.msgType = MessageTypePayloadBeacon;
-        memcpy(&beacon.msg.beacon.payload, payload, payloadLen);
+        if (!payload) payloadLen = 0;
+        else memcpy(&beacon.msg.beacon.payload, payload, payloadLen);
         radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + payloadLen);
     }
     else radio->transmit(-1, &beacon, 2);
