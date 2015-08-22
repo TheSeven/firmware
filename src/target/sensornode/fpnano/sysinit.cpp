@@ -12,6 +12,9 @@
 void SENSORNODE_TARGET_OPTIMIZE sensornode_sysinit()
 {
     GPIO::configure(PIN_F0, GPIO::MODE_ANALOG);
+#ifndef ONEWIRE_PIN
+    GPIO::configure(PIN_F1, GPIO::MODE_ANALOG);
+#endif
     clockgate_enable(STM32_PWR_CLOCKGATE, true);
     union STM32_PWR_REG_TYPE::CR CR = { 0 };
     CR.b.DBP = true;
