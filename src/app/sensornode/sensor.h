@@ -11,7 +11,7 @@ struct __attribute__((packed,aligned(4))) SensorAttributes
 {
     uint32_t dataFormat;
     uint16_t sensorType;
-    uint16_t interval;
+    int16_t interval;
     char sensorName[16];
 };
 
@@ -35,7 +35,7 @@ public:
     constexpr SensorNodeSensorDriver()
         : meta{0, {0, 0, 0, {0}}}, dataOffset(0), writePtr(0), nextTime(0), bytesPerPoint(0) {}
     constexpr SensorNodeSensorDriver(uint8_t bytesPerPoint, uint32_t dataFormat, uint16_t sensorType,
-                                     uint16_t interval, uint8_t offset)
+                                     int16_t interval, uint8_t offset)
         : meta{offset, {dataFormat, sensorType, interval, {0}}},
           dataOffset(0), writePtr(0), nextTime(0), bytesPerPoint(bytesPerPoint) {}
     virtual uint32_t readValue() = 0;

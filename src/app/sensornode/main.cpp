@@ -80,8 +80,8 @@ int SENSORNODE_CORE_OPTIMIZE main()
                     measurementTime = sensors[i]->nextTime;
                     liveData.boardTime = measurementTime;
                 }
-                sensors[i]->nextTime += sensors[i]->meta.attr.interval;
-                writeDataPoint(i, value);
+                sensors[i]->nextTime += ABS(sensors[i]->meta.attr.interval);
+                if (sensors[i]->meta.attr.interval > 0) writeDataPoint(i, value);
             }
             if (sensors[i]->nextTime < nextSensor) nextSensor = sensors[i]->nextTime;
         }
