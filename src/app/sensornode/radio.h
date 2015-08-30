@@ -60,6 +60,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
         RebootCommand = 0x0000,
         SaveConfigCommand = 0x0100,
         TimestampCommand = 0x0200,
+        BlinkCommand = 0x0300,
         FactoryProgramming = 0x00ff,
     };
 
@@ -113,6 +114,10 @@ struct __attribute__((packed,aligned(4))) RadioPacket
             uint32_t unixTime;
             uint16_t clientId;
         } timestamp;
+        struct __attribute__((packed))
+        {
+            uint8_t time;
+        } blink;
         struct __attribute__((packed))
         {
             uint32_t serialNumber;

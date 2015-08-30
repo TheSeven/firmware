@@ -23,6 +23,8 @@ extern uint8_t sensorCount;
 extern LiveData liveData;
 extern uint8_t liveDataSize;
 extern int now;
+extern int blinkUntil;
+extern bool blinkState;
 extern bool deepSleep;
 
 

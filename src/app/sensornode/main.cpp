@@ -58,6 +58,13 @@ int SENSORNODE_CORE_OPTIMIZE main()
 
         handleRadio();
 
+        if (now < blinkUntil || blinkState)
+        {
+            blinkState ^= 1;
+            GPIO::setLevel(SENSORNODE_LEDPIN, blinkState);
+            deepSleep = false;
+        }
+
         bool first = true;
         int nextSensor = now + 65536;
         for (int i = 0; i < sensorCount; i++)

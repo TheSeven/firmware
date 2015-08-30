@@ -316,6 +316,10 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
                     packet->args.commandResult.status = RadioPacket::StatusSuccess;
                 }
                 break;
+            case RadioPacket::BlinkCommand:
+                blinkUntil = now + packet->args.command.arg.blink.time;
+                packet->args.commandResult.status = RadioPacket::StatusSuccess;
+                break;
             case RadioPacket::FactoryProgramming:
                 if (length < 8) packet->args.commandResult.status = RadioPacket::StatusInvalidArgument;
                 else
