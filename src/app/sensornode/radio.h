@@ -142,7 +142,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
         {
             uint16_t size;
             uint32_t measurementId;
-            uint32_t fromTime;
+            uint32_t dataOffset;
             uint8_t sensorId;
         } downloadMeasurements;
         struct __attribute__((packed))

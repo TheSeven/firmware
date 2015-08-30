@@ -10,6 +10,8 @@ class SensorNodeSensorHumidityHTU21D : public SensorNodeSensorDriver
 
 public:
     SensorNodeSensorHumidityHTU21D() {}
-    SensorNodeSensorHumidityHTU21D(HTU21D* sensor, uint16_t interval, uint8_t offset);
+    SensorNodeSensorHumidityHTU21D(HTU21D* sensor, uint16_t interval, uint8_t offset)
+        : SensorNodeSensorDriver(2, 0x48313248, 0, interval, offset), sensor(sensor) {}
+
     uint32_t readValue();
 };

@@ -8,7 +8,7 @@
 struct DownloadJob
 {
     uint32_t measurementId;
-    uint32_t boardTime;
+    uint32_t offset;
     uint16_t sizeLeft;
     uint16_t seq;
     uint8_t req;
@@ -80,12 +80,12 @@ void SENSORNODE_RADIO_OPTIMIZE handleDownload()
             switch (currentDownload.type)
             {
             case DownloadJob::Meta:
-                if (getHistoryMeta(&currentDownload.measurementId, &currentDownload.boardTime,
+                if (getHistoryMeta(&currentDownload.measurementId, &currentDownload.offset,
                                    &packet.args.downloadPacket.payload.meta))
                     length = sizeof(packet.args.downloadPacket.payload.meta);
                 break;
             case DownloadJob::SensorData:
-                length = getHistorySensorData(currentDownload.measurementId, &currentDownload.boardTime,
+                length = getHistorySensorData(currentDownload.measurementId, &currentDownload.offset,
                                               currentDownload.sensorId, &packet.args.downloadPacket.payload, maxLength);
                 break;
             case DownloadJob::None: break;
@@ -327,7 +327,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
             currentDownload.seq = 0;
             currentDownload.sizeLeft = packet->args.downloadMeta.size;
             currentDownload.measurementId = packet->args.downloadMeta.fromMeasurementId;
-            currentDownload.boardTime = packet->args.downloadMeta.fromTime;
+            currentDownload.offset = packet->args.downloadMeta.fromTime;
             currentDownload.type = DownloadJob::Meta;
             handleDownload();
             break;
@@ -336,7 +336,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
             currentDownload.seq = 0;
             currentDownload.sizeLeft = packet->args.downloadMeasurements.size;
             currentDownload.measurementId = packet->args.downloadMeasurements.measurementId;
-            currentDownload.boardTime = packet->args.downloadMeasurements.fromTime;
+            currentDownload.offset = packet->args.downloadMeasurements.dataOffset;
             currentDownload.sensorId = packet->args.downloadMeasurements.sensorId;
             currentDownload.type = DownloadJob::SensorData;
             handleDownload();

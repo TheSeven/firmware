@@ -20,6 +20,7 @@ void SENSORNODE_CORE_OPTIMIZE startMeasurement()
     rtcDriver->reset();
     for (int i = 0; i < sensorCount; i++)
     {
+        sensors[i]->dataOffset = 0;
         sensors[i]->writePtr = 0;
         sensors[i]->nextTime = 0;
     }
@@ -34,7 +35,7 @@ void SENSORNODE_CORE_OPTIMIZE updateLiveDataSize()
     {
         if (!sensors[i]->meta.attr.interval) continue;
         uint32_t offset = sensors[i]->meta.offset;
-        uint32_t len = sensors[i]->meta.attr.bytesPerPoint;
+        uint32_t len = sensors[i]->bytesPerPoint;
         if (offset + len > liveDataSize && offset + len <= sizeof(liveData.sensorData)) liveDataSize = offset + len;
     }
     memset(liveData.sensorData, 0xff, liveDataSize);
@@ -72,7 +73,7 @@ int SENSORNODE_CORE_OPTIMIZE main()
                 }
                 uint32_t value = sensors[i]->readValue();
                 int offset = sensors[i]->meta.offset;
-                int len = sensors[i]->meta.attr.bytesPerPoint;
+                int len = sensors[i]->bytesPerPoint;
                 if (offset + len <= liveDataSize)
                 {
                     memcpy(liveData.sensorData + offset, &value, len);

@@ -14,9 +14,11 @@ union __attribute__((packed,aligned(4))) DataHeader
     struct __attribute__((packed))
     {
         uint32_t measurementId;
-        uint32_t boardTime;
+        uint32_t dataOffset;
         uint8_t sensorId;
-        uint64_t : 56;
+        uint8_t bytesPerPoint;
+        int16_t pageSeq;
+        uint64_t : 32;
         SensorAttributes attr;
         uint64_t : 63;
         bool invalid : 1;
@@ -40,6 +42,7 @@ ConfigData<Config, 32> config;
 ConfigStore configStore(&config);
 uint32_t measurementId;
 uint32_t measurementTime;
+int16_t pageSeq;
 uint32_t currentMeta;
 uint32_t nextDataPage;
 HistoryReadPtr histPtr;
@@ -74,7 +77,7 @@ void SENSORNODE_STORAGE_OPTIMIZE writeDataPoint(uint8_t sensor, uint32_t data)
     SensorMeta* meta = &sensors[sensor]->meta;
     uint32_t eraseSize = storageDriver->dataStorage->eraseSize;
     uint32_t writePtr = sensors[sensor]->writePtr;
-    uint32_t bytesPerPoint = meta->attr.bytesPerPoint;
+    uint32_t bytesPerPoint = sensors[sensor]->bytesPerPoint;
     if (!(writePtr & (eraseSize - 1)))
     {
         if (!sensornode_flash_write_safe()) sensornode_powerdown();
@@ -84,8 +87,10 @@ void SENSORNODE_STORAGE_OPTIMIZE writeDataPoint(uint8_t sensor, uint32_t data)
         DataHeader header;
         memset(&header, 0xff, sizeof(header));
         header.measurementId = measurementId;
-        header.boardTime = now;
+        header.dataOffset = sensors[sensor]->dataOffset;
         header.sensorId = sensor;
+        header.bytesPerPoint = bytesPerPoint;
+        header.pageSeq = ++pageSeq;
         memcpy(&header.attr, &meta->attr, sizeof(header.attr));
         header.invalid = false;
         storageDriver->dataStorage->write(nextDataPage, sizeof(header), &header);
@@ -94,6 +99,7 @@ void SENSORNODE_STORAGE_OPTIMIZE writeDataPoint(uint8_t sensor, uint32_t data)
     }
     storageDriver->dataStorage->write(writePtr, bytesPerPoint, &data);
     sensors[sensor]->writePtr = writePtr + bytesPerPoint;
+    sensors[sensor]->dataOffset += bytesPerPoint;
 }
 
 
@@ -196,7 +202,7 @@ bool SENSORNODE_STORAGE_OPTIMIZE getHistoryMeta(uint32_t* fromMeasId, uint32_t* 
 }
 
 
-int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uint32_t* fromTime, uint8_t sensorId,
+int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uint32_t* dataOffset, uint8_t sensorId,
                                                      void* ptr, uint32_t maxLen)
 {
     uint32_t size = storageDriver->dataStorage->pageCount;
@@ -205,9 +211,8 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
     uint32_t base = histPtr.address;
     uint32_t lastMeasId = 0;
     uint32_t addr = 0xffffffff;
-    bool found = false;
     storageDriver->stayAwake(true);
-    for (uint32_t o = 0; !found && o < size; o += step)
+    for (uint32_t o = 0; addr == 0xffffffff && o < size; o += step)
     {
         cacheHistoryDataBlock(base + o);
         if (histPtr.d.invalid) break;
@@ -216,13 +221,12 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
         lastMeasId = histPtr.d.measurementId;
         if (histPtr.d.measurementId != measurementId) continue;
         if (histPtr.d.sensorId != sensorId) continue;
-        if (histPtr.d.boardTime > *fromTime) break;
-        uint32_t offset = (*fromTime - histPtr.d.boardTime) / histPtr.d.attr.interval * histPtr.d.attr.bytesPerPoint;
+        if (histPtr.d.dataOffset > *dataOffset) break;
+        uint32_t offset = *dataOffset - histPtr.d.dataOffset;
         if (offset >= dataSize) continue;
         addr = histPtr.address + sizeof(PaddedDataHeader) + offset;
-        found = true;
     }
-    for (uint32_t o = 0; !found && o < size; o += step)
+    for (uint32_t o = 0; addr == 0xffffffff && o < size; o += step)
     {
         cacheHistoryDataBlock(base - o);
         if (histPtr.d.invalid) break;
@@ -231,19 +235,17 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
         lastMeasId = histPtr.d.measurementId;
         if (histPtr.d.measurementId != measurementId) continue;
         if (histPtr.d.sensorId != sensorId) continue;
-        if (histPtr.d.boardTime > *fromTime) continue;
-        uint32_t offset = (*fromTime - histPtr.d.boardTime) / histPtr.d.attr.interval * histPtr.d.attr.bytesPerPoint;
+        if (histPtr.d.dataOffset > *dataOffset) continue;
+        uint32_t offset = *dataOffset - histPtr.d.dataOffset;
         if (offset >= dataSize) break;
         addr = histPtr.address + sizeof(PaddedDataHeader) + offset;
-        found = true;
     }
     storageDriver->stayAwake(false);
     if (addr == 0xffffffff) return 0;
     uint32_t len = MIN(maxLen, step - addr % step);
     if (storageDriver->dataStorage->read(addr, len, ptr) != Storage::RESULT_OK) hang();
-    while (len && entryIsEmpty(((uint8_t*)ptr) + len, histPtr.d.attr.bytesPerPoint))
-        len -= histPtr.d.attr.bytesPerPoint;
-    *fromTime += len / histPtr.d.attr.bytesPerPoint * histPtr.d.attr.interval;
+    while (len && entryIsEmpty(((uint8_t*)ptr) + len, histPtr.d.bytesPerPoint)) len -= histPtr.d.bytesPerPoint;
+    *dataOffset += len;
     return len;
 }
 
@@ -252,7 +254,6 @@ void SENSORNODE_STORAGE_OPTIMIZE initStorage()
 {
     storageDriver->init();
     storageDriver->stayAwake(true);
-
     if (configStore.init(storageDriver->configStorage) != Storage::RESULT_OK) hang();
     if (config.data.version > CONFIG_VERSION) memset(&config.data, 0, sizeof(config.data));
     if (config.data.version < 1)
@@ -275,12 +276,8 @@ void SENSORNODE_STORAGE_OPTIMIZE initStorage()
             if (meta.measurementId != 0xffffffff) currentMeta = offset;
             continue;
         }
-        if (meta.measurementId > measurementId)
-        {
-            measurementId = meta.measurementId;
-            boardTime = meta.boardTime;
-        }
-        if (meta.boardTime < boardTime) continue;
+        if (meta.measurementId > measurementId) measurementId = meta.measurementId;
+        else if (meta.boardTime < boardTime) continue;
         boardTime = meta.boardTime;
         currentMeta = offset;
     }
@@ -288,22 +285,17 @@ void SENSORNODE_STORAGE_OPTIMIZE initStorage()
     DataHeader header;
     nextDataPage = 0;
     uint32_t lastId = 0;
-    boardTime = 0;
+    pageSeq = 0;
     pageCount = storageDriver->dataStorage->pageCount;
     uint32_t eraseSize = storageDriver->dataStorage->eraseSize;
     for (nextDataPage = 0; nextDataPage < pageCount; nextDataPage += eraseSize)
     {
         if (storageDriver->dataStorage->read(nextDataPage, sizeof(DataHeader), &header) != Storage::RESULT_OK) break;
         if (header.invalid) break;
-        if (header.measurementId > lastId)
-        {
-            lastId = header.measurementId;
-            boardTime = header.boardTime;
-        }
-        if (header.measurementId < lastId || header.boardTime < boardTime) break;
-        boardTime = header.boardTime;
+        if (header.measurementId > lastId) lastId = header.measurementId;
+        else if (header.measurementId < lastId || header.pageSeq - pageSeq < 0) break;
+        pageSeq = header.pageSeq;
     }
-
     histPtr.d.invalid = true;
     storageDriver->stayAwake(false);
     radioDriver->beacon->timeoutExpired();
