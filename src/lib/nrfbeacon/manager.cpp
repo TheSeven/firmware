@@ -18,10 +18,12 @@ bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::processPacket(void* ptr, int len)
             if (len < baseLen) break;
             if (data->msg.cmd.args.setParameters.target.vendor
              && memcmp(&data->msg.cmd.args.setParameters.target, &id->hw, sizeof(id->hw))) break;
+            sendIdCount = data->msg.cmd.args.setParameters.idBeaconCount;
             interval = MIN(idleInterval * 100, data->msg.cmd.args.setParameters.beaconInterval);
             timeout = MAX(1, MIN(maxTimeout, data->msg.cmd.args.setParameters.timeout));
             localId = data->msg.cmd.args.setParameters.localId;
             if (len > baseLen) applyRadioSettings(&data->msg.cmd.args.setParameters.radioSettings, len - baseLen);
+            if (!sendIdCount) return true;
         }
         // fallthrough
         case CommandSendId:
@@ -42,8 +44,9 @@ bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::sendBeacon()
     beacon.protocol = 0xffff;
     beacon.msgType = MessageTypeBeacon;
     beacon.msg.beacon.localId = localId;
-    if (sendId)
+    if (sendIdCount)
     {
+        sendIdCount--;
         memcpy(&beacon.msg.beacon.payload, id, sizeof(*id));
         radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + sizeof(*id));
     }
@@ -62,6 +65,6 @@ void NRFBEACON_OPTIMIZE NRFBeacon::Manager::timeoutExpired()
 {
     timeout = 0;
     interval = idleInterval * 100;
-    sendId = false;
+    sendIdCount = 0;
     resetRadioSettings();
 }

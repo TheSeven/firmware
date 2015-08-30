@@ -66,7 +66,8 @@ namespace NRFBeacon
                         struct __attribute__((packed))
                         {
                             Identification::Hardware target;
-                            uint16_t beaconInterval;
+                            uint16_t beaconInterval : 14;
+                            uint16_t idBeaconCount : 2;
                             uint8_t timeout;
                             uint8_t localId;
                             uint8_t radioSettings[12];
@@ -102,7 +103,7 @@ namespace NRFBeacon
         uint8_t timeout;  // seconds
 
     private:
-        bool sendId;
+        uint8_t sendIdCount;
 
     protected:
         virtual void applyRadioSettings(void* settings, int len) = 0;
@@ -111,7 +112,7 @@ namespace NRFBeacon
     public:
         constexpr Manager(NRF::Radio* radio, const Identification* id, uint8_t idleInterval, uint8_t maxTimeout)
             : radio(radio), id(id), localId(0), idleInterval(idleInterval), maxTimeout(maxTimeout),
-              payloadLen(0), payload(NULL), interval(idleInterval * 100), timeout(0), sendId(false) {}
+              payloadLen(0), payload(NULL), interval(idleInterval * 100), timeout(0), sendIdCount(0) {}
         bool processPacket(void* data, int len);
         bool sendBeacon();
         void timeoutExpired();
