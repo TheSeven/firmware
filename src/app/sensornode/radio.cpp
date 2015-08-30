@@ -87,6 +87,18 @@ void SENSORNODE_RADIO_OPTIMIZE handleDownload()
             case DownloadJob::SensorData:
                 length = getHistorySensorData(currentDownload.measurementId, &currentDownload.offset,
                                               currentDownload.sensorId, &packet.args.downloadPacket.payload, maxLength);
+                if (length < 0)
+                {
+                    currentDownload.type = DownloadJob::None;
+                    packet.type = RadioPacket::CommandResult;
+                    packet.req = currentDownload.req;
+                    packet.args.commandResult.cmd = (enum RadioPacket::Command)0;
+                    packet.args.commandResult.status = RadioPacket::StatusDataGap;
+                    packet.args.commandResult.arg0 = -length;
+                    radioDriver->radio->transmit(-1, &packet, sizeof(packet) - sizeof(packet.args)
+                                                            + sizeof(packet.args.commandResult));
+                    return;
+                }
                 break;
             case DownloadJob::None: break;
             }

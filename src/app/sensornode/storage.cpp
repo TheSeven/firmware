@@ -211,6 +211,7 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
     uint32_t base = histPtr.address;
     uint32_t lastMeasId = 0;
     uint32_t addr = 0xffffffff;
+    uint32_t oldest = 0xffffffff;
     storageDriver->stayAwake(true);
     for (uint32_t o = 0; addr == 0xffffffff && o < size; o += step)
     {
@@ -221,6 +222,7 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
         lastMeasId = histPtr.d.measurementId;
         if (histPtr.d.measurementId != measurementId) continue;
         if (histPtr.d.sensorId != sensorId) continue;
+        if (histPtr.d.dataOffset < oldest) oldest = histPtr.d.dataOffset;
         if (histPtr.d.dataOffset > *dataOffset) break;
         uint32_t offset = *dataOffset - histPtr.d.dataOffset;
         if (offset >= dataSize) continue;
@@ -235,13 +237,14 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
         lastMeasId = histPtr.d.measurementId;
         if (histPtr.d.measurementId != measurementId) continue;
         if (histPtr.d.sensorId != sensorId) continue;
+        if (histPtr.d.dataOffset < oldest) oldest = histPtr.d.dataOffset;
         if (histPtr.d.dataOffset > *dataOffset) continue;
         uint32_t offset = *dataOffset - histPtr.d.dataOffset;
         if (offset >= dataSize) break;
         addr = histPtr.address + sizeof(PaddedDataHeader) + offset;
     }
     storageDriver->stayAwake(false);
-    if (addr == 0xffffffff) return 0;
+    if (addr == 0xffffffff) return oldest == 0xffffffff || *dataOffset > oldest ? 0 : *dataOffset- oldest;
     uint32_t len = MIN(maxLen, step - addr % step);
     if (storageDriver->dataStorage->read(addr, len, ptr) != Storage::RESULT_OK) hang();
     while (len && entryIsEmpty(((uint8_t*)ptr) + len, histPtr.d.bytesPerPoint)) len -= histPtr.d.bytesPerPoint;

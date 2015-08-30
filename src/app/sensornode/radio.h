@@ -71,6 +71,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
         StatusInvalidArgument = 0x00000003,
         StatusOutOfMemory = 0x00000004,
         StatusHardwareError = 0x00000005,
+        StatusDataGap = 0x00000006,
     };
 
     union __attribute__((packed)) ConfigArgument
@@ -178,6 +179,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
         {
             enum Command cmd : 16;
             enum StatusCode status : 32;
+            uint32_t arg0;
         } commandResult;
     } args;
 };
