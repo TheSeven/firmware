@@ -60,3 +60,11 @@ NRF::SPI::Status NRF_OPTIMIZE NRF::NRF24L01P::handleIRQ()
         packetTransmitted(!status.b.maxRetrans, txObserve.b.retransCount);
     return result;
 }
+
+NRF::SPI::Status NRF_OPTIMIZE NRF::NRF24L01P::enablePipe(int pipe, bool on)
+{
+    uint8_t enabled;
+    readReg(Reg_RxPipeEnable, &enabled, sizeof(enabled));
+    enabled = (enabled & (~(1 << pipe))) | (on << pipe);
+    return writeReg(Reg_RxPipeEnable, &enabled, sizeof(enabled));
+}

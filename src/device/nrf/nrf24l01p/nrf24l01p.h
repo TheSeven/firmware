@@ -212,6 +212,7 @@ namespace NRF
             : Radio(bus, cspin, frequency, receivedHandler, transmittedHandler) {}
 
         void configure(Configuration* config);
+        SPI::Status enablePipe(int pipe, bool on);
         SPI::Status handleIRQ();
     };
 
