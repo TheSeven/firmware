@@ -24,6 +24,7 @@ enum Command
     ConfigAddr = 0x11,
     ConfigSize = 0x12,
     ConfigRole = 0x13,
+    ConfigEnable = 0x14,
     ConfigReset = 0x1f,
 };
 
@@ -61,9 +62,6 @@ void initRadio()
     nrfConfig.rfSetup.b.dataRate = nrfConfig.rfSetup.b.DataRate_1Mbit;
     nrfConfig.featureCtl.b.ackPayload = true;
     nrfConfig.featureCtl.b.dynLength = true;
-    nrfConfig.rxPipeEnable.b.pipe0 = true;
-    nrfConfig.autoAckCtl.b.pipe0 = true;
-    nrfConfig.dynLengthCtl.b.pipe0 = true;
     radio.configure(&nrfConfig);
 }
 
@@ -164,6 +162,10 @@ int main()
                     case ConfigRole:
                         if (*packet != 3) break;
                         radio.setMode(packet[2]);
+                        break;
+                    case ConfigEnable:
+                        if (*packet != 3) break;
+                        radio.enablePipe(packet[2] & 0x7, packet[2] >> 7);
                         break;
                     case ConfigReset:
                         if (*packet != 2) break;
