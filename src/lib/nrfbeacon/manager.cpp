@@ -65,6 +65,6 @@ void NRFBEACON_OPTIMIZE NRFBeacon::Manager::timeoutExpired()
 {
     timeout = 0;
     interval = idleInterval * 100;
-    sendIdCount = 0;
+    sendIdCount = 7;
     resetRadioSettings();
 }
