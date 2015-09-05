@@ -31,6 +31,7 @@
 
 #define STACK_SIZE 1024
 
+#define GPIO_SUPPORT_FAST_MODE
 #define STM32_ENABLE_SPI
 #define STM32_ENABLE_UART
 #include "board/flexperiment/nano/target.h"

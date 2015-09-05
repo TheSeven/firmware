@@ -74,6 +74,7 @@ void initUART()
 
 int main()
 {
+    GPIO::enableFast(PIN_RADIO_IRQ, true);
     initRadio();
     initUART();
 
