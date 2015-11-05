@@ -248,8 +248,10 @@ struct __attribute__((packed)) STM32_TIM_REG_TYPE
 
 #ifdef SOC_STM32F0
 #define STM32_TIM1_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40012c00))
+#define STM32_TIM2_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40000000))
 #define STM32_TIM3_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40000400))
 #define STM32_TIM6_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40001000))
+#define STM32_TIM7_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40001400))
 #define STM32_TIM14_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40002000))
 #define STM32_TIM15_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40014000))
 #define STM32_TIM16_REGS (*((volatile STM32_TIM_REG_TYPE*)0x40014400))
