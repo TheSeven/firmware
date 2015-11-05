@@ -42,3 +42,5 @@ typedef uintptr_t   mem_ptr_t;
 #ifndef LWIP_PLATFORM_ASSERT
 #define LWIP_PLATFORM_ASSERT(x)
 #endif
+
+typedef uint8_t sys_prot_t;
