@@ -24,6 +24,7 @@ namespace STM32
         clockgate_enable(STM32_I2C_CLOCKGATE(index), false);
         NVIC_ClearPendingIRQ(i2c_irq[index]);
         NVIC_EnableIRQ(i2c_irq[index]);
+        initialized = true;
     }
 
     enum ::I2C::Result I2C::txn(const ::I2C::Transaction* txn)
