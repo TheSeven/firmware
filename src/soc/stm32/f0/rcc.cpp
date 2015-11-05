@@ -158,7 +158,6 @@ namespace STM32
         
         // Set up sane clock gating defaults
         union STM32_RCC_REG_TYPE::CLKGATES::REG::AHBENR AHBENR = { 0 };
-        AHBENR.b.SRAMEN = true;
         STM32_RCC_REGS.CLKGATES.r.AHBENR.d32 = AHBENR.d32;
         union STM32_RCC_REG_TYPE::CLKGATES::REG::APB2ENR APB2ENR = { 0 };
         STM32_RCC_REGS.CLKGATES.r.APB2ENR.d32 = APB2ENR.d32;
