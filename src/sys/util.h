@@ -121,6 +121,7 @@ extern "C"
     __attribute__((noreturn)) void execfirmware(void* address);
     void enter_critical_section();
     void leave_critical_section();
+    uint32_t get_critsec_state();
     void clean_dcache(const void* addr, uint32_t len);
     void invalidate_dcache(const void* addr, uint32_t len);
     void invalidate_icache(const void* addr, uint32_t len);

@@ -24,6 +24,13 @@ void CORTEXUTIL_OPTIMIZE leave_critical_section()
     __asm__ volatile("cpsie if");
 }
 
+uint32_t CORTEXUTIL_OPTIMIZE get_critsec_state()
+{
+    uint32_t state;
+    __asm__("mrs %[state], primask" : [state] "=r" (state));
+    return state;
+}
+
 uint32_t __attribute__((const)) CORTEXUTIL_OPTIMIZE swap32(uint32_t data)
 {
     __asm__("rev %[data], %[data]" : [data] "+r" (data));
