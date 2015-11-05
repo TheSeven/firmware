@@ -29,8 +29,8 @@ static TM1829::STM32Driver ledStrip(&ledConfig);
 
 void output_init()
 {
-    irq_set_priority(dma1_stream2_3_IRQn, 6);
-    irq_enable(dma1_stream4_5_IRQn, true);
+    irq_set_priority(dma1_stream4_7_dma2_stream3_5_IRQn, 6);
+    irq_enable(dma1_stream4_7_dma2_stream3_5_IRQn, true);
     for (int s = 0; s < LEDSTRIP_COUNT; s++)
     {
         uint8_t* ptr = *led_data[s];
@@ -61,7 +61,7 @@ void output_handle_dmx(uint8_t* data)
     GPIO::setLevel(LED_PIN, led_state);
 }
 
-extern "C" void dma1_stream4_5_irqhandler()
+extern "C" void dma1_stream4_7_dma2_stream3_5_irqhandler()
 {
     ledStrip.handleIrq();
 }

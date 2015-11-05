@@ -56,6 +56,14 @@
     #else
         #error STM32 operating voltage is too high! Maximum is 3600mV.
     #endif
+#elif defined(SOC_STM32F072)
+    #if (STM32_VOLTAGE) < 2000
+        #error STM32 operating voltage is too low! Minimum is 2000mV.
+    #elif (STM32_VOLTAGE) < 3600
+        #define STM32_FLASH_SPEED 24000000
+    #else
+        #error STM32 operating voltage is too high! Maximum is 3600mV.
+    #endif
 #elif defined(SOC_STM32F0)
     #if (STM32_VOLTAGE) < 2400
         #error STM32 operating voltage is too low! Minimum is 2400mV.

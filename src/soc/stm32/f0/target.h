@@ -1,6 +1,7 @@
 #pragma once
 
 #define SOC_STM32F0
+#if defined(SOC_STM32F030)
 #if defined(SOC_STM32F0XXX4)
 #define FLASH_SIZE 16K
 #define SRAM_SIZE 4K
@@ -10,6 +11,23 @@
 #elif defined(SOC_STM32F0XXX8)
 #define FLASH_SIZE 64K
 #define SRAM_SIZE 8K
+#else
+#error Unknown STM32F030 variant!
+#endif
+#elif defined(SOC_STM32F072)
+#if defined(SOC_STM32F0XXX8)
+#ifdef STM32_USE_INOFFICIAL
+#define FLASH_SIZE 128K
+#else
+#define FLASH_SIZE 64K
+#endif
+#define SRAM_SIZE 16K
+#elif defined(SOC_STM32F0XXXC)
+#define FLASH_SIZE 128K
+#define SRAM_SIZE 16K
+#else
+#error Unknown STM32F072 variant!
+#endif
 #else
 #error Unknown STM32F0 variant!
 #endif
