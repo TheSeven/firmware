@@ -11,6 +11,14 @@
 #endif
 
 
+struct snprintf_state
+{
+    unsigned char* ptr;
+    uint16_t bytes;
+    uint16_t max;
+};
+
+
 static const char printf_hexdigit[] = "0123456789ABCDEF";
 
 
@@ -328,4 +336,39 @@ bad_fmt:
         }
     }
     return printed;
+}
+
+
+static int PRINTF_OPTIMIZE snprintf_putchar(void *ptr, unsigned char c)
+{
+    struct snprintf_state* state = (struct snprintf_state*)ptr;
+    if (state->bytes < state->max)
+    {
+        *state->ptr++ = c;
+        state->bytes++;
+        return 1;
+    }
+    return 0;
+}
+
+
+int PRINTF_OPTIMIZE vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
+{
+    struct snprintf_state state;
+    state.ptr = (unsigned char*)buf;
+    state.bytes = 0;
+    state.max = size;
+    printf_format(snprintf_putchar, &state, fmt, ap);
+    state.ptr[(state.bytes < state.max) ? 0 : -1] = 0;
+    return state.bytes;
+}
+
+
+int PRINTF_OPTIMIZE snprintf(char *buf, size_t size, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    int result = vsnprintf(buf, size, fmt, ap);
+    va_end(ap);
+    return result;
 }
