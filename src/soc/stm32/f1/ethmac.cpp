@@ -361,7 +361,7 @@ namespace STM32
                 volatile struct DMADescRX* desc = dmaRXFrameInfo->firstSeg;
                 int length = curRX->fl - 4;
                 struct pbuf* p = NULL;
-                if (!curRX->es) p = pbuf_alloc(PBUF_RAW, length, PBUF_POOL);
+                if (!curRX->es && ETHMAC::intf) p = pbuf_alloc(PBUF_RAW, length, PBUF_POOL);
                 struct pbuf* q = p;
                 int o = 0;
                 int l = 0;
@@ -396,7 +396,7 @@ namespace STM32
                     STM32_ETH_REGS.DMASR.d32 = DMASR.d32;
                     STM32_ETH_REGS.DMARPDR = 0;
                 }
-                if (p && ETHMAC::intf && ETHMAC::intf->lwipIf.input(p, &ETHMAC::intf->lwipIf) != ERR_OK) pbuf_free(p);
+                if (p && ETHMAC::intf->lwipIf.input(p, &ETHMAC::intf->lwipIf) != ERR_OK) pbuf_free(p);
             }
             curRX = (volatile struct DMADescRX*)curRX->rbap2;
         }
