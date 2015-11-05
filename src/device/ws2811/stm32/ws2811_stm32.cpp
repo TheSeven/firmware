@@ -10,8 +10,10 @@
 static volatile STM32_TIM_REG_TYPE* const timer_regs[] =
 {
     &STM32_TIM1_REGS,
+    &STM32_TIM2_REGS,
     &STM32_TIM3_REGS,
     &STM32_TIM6_REGS,
+    &STM32_TIM7_REGS,
     &STM32_TIM14_REGS,
     &STM32_TIM15_REGS,
     &STM32_TIM16_REGS,
@@ -21,8 +23,10 @@ static volatile STM32_TIM_REG_TYPE* const timer_regs[] =
 uint8_t const timer_clocks[] =
 {
     STM32_TIM1_CLOCKGATE,
+    STM32_TIM2_CLOCKGATE,
     STM32_TIM3_CLOCKGATE,
     STM32_TIM6_CLOCKGATE,
+    STM32_TIM7_CLOCKGATE,
     STM32_TIM14_CLOCKGATE,
     STM32_TIM15_CLOCKGATE,
     STM32_TIM16_CLOCKGATE,
@@ -49,7 +53,7 @@ WS2811::STM32Driver::STM32Driver(const WS2811::STM32Driver::Config* config)
     clockgate_enable(timer_clocks[config->timer], true);
     clockgate_enable(dma_clocks[config->dmaController], true);
     dmaStream = (volatile STM32_DMA_STREAM_REG_TYPE*)(((uint32_t)dma) + 8 + 0x14 * dmaChannel);
-    dmaStream->CPAR = &STM32_TIM1_REGS.DMAR;
+    dmaStream->CPAR = &timer->DMAR;
     dmaStream->CMAR = dmaBuffer;
     union STM32_TIM_REG_TYPE::DCR DCR = { 0 };
     DCR.b.DBL = parallel - 1;
@@ -101,7 +105,7 @@ void WS2811::STM32Driver::sendFrame(void** data, int pixels)
     dmaStream->CNDTR = 2 * parallel * 24 * pixelsPerIRQ;
     union STM32_DMA_STREAM_REG_TYPE::CCR CCR = { 0 };
     CCR.b.PL = 3;
-    CCR.b.PSIZE = 1;
+    CCR.b.PSIZE = 2;
     CCR.b.MINC = true;
     CCR.b.CIRC = true;
     CCR.b.DIR = 1;
