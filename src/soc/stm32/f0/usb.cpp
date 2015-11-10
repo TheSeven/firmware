@@ -103,7 +103,7 @@ void STM32::USB::copyFromPMA(void* dest, const void* src, int len)
 {
     uint8_t* d = (uint8_t*)dest;
     const uint16_t* s = (const uint16_t*)src;
-    while (len--)
+    while (len-- > 0)
     {
         uint16_t data = *s++;
         *d++ = data;
