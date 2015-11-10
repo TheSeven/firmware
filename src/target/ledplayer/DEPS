@@ -1,0 +1,5 @@
+../../board/flexperiment/micro/f072
+../../device/pcd8544
+../../device/ws2811/stm32
+../../device/sdhc_spi
+../../lib/fatfs
