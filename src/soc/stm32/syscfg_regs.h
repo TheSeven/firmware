@@ -44,5 +44,8 @@ struct __attribute__((packed)) STM32_SYSCFG_REG_TYPE
     } CMPCR;
 };
 
+#ifdef SOC_STM32F0
+#define STM32_SYSCFG_REGS (*((volatile STM32_SYSCFG_REG_TYPE*)0x40010000))
+#else
 #define STM32_SYSCFG_REGS (*((volatile STM32_SYSCFG_REG_TYPE*)0x40013800))
-
+#endif
