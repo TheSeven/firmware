@@ -30,16 +30,21 @@ SensorNodeRadioDriver* radioDriver = &nrfRadioDriver;
 
 void SENSORNODE_RADIO_OPTIMIZE SensorNodeRadioNRF24L01P::sleep()
 {
+    GPIO::setLevel(SENSORNODE_RADIO_NRF24L01P_CEPIN, false);
     NRF::NRF24L01P::Config nrfOff;
     nrfRadio.readReg(NRF::NRF24L01P::Reg_Config, &config, sizeof(config));
+    config.b.powerUp = true;
     nrfOff.d8 = config.d8;
     nrfOff.b.powerUp = false;
     nrfRadio.writeReg(NRF::NRF24L01P::Reg_Config, &nrfOff, sizeof(nrfOff));
+    sleeping = true;
 }
 
 void SENSORNODE_RADIO_OPTIMIZE SensorNodeRadioNRF24L01P::wake()
 {
     nrfRadio.writeReg(NRF::NRF24L01P::Reg_Config, &config, sizeof(config));
+    sleeping = false;
+    GPIO::setLevel(SENSORNODE_RADIO_NRF24L01P_CEPIN, true);
 }
 
 bool SENSORNODE_RADIO_OPTIMIZE SensorNodeRadioNRF24L01P::detectIRQ()

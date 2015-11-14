@@ -31,6 +31,7 @@ int commTimeout = -1;
 uint16_t beaconInterval;
 bool beaconRTC;
 bool rebootPending = false;
+uint8_t txPending = 0;
 
 
 void SENSORNODE_RADIO_OPTIMIZE applyBeaconSettings(uint8_t idleInterval, uint8_t maxTimeout, uint8_t localId)
@@ -55,13 +56,34 @@ void SENSORNODE_RADIO_OPTIMIZE updateBeaconInterval()
 void SENSORNODE_RADIO_OPTIMIZE calcNextBeacon()
 {
     if (beaconRTC) nextBeacon = now + beaconInterval / 100;
-    else nextBeacon = TIMEOUT_SETUP(beaconInterval * 10000);
+    else nextBeacon = TIMEOUT_SETUP((beaconInterval - 1) * 10000);
 }
 
 
 void SENSORNODE_RADIO_OPTIMIZE calcTimeout()
 {
     commTimeout = now + (radioDriver->beacon->timeout ? radioDriver->beacon->timeout : 3600);
+}
+
+
+static void SENSORNODE_RADIO_OPTIMIZE flushTx()
+{
+    radioDriver->radio->flushTx();
+    txPending = 0;
+}
+
+
+static void SENSORNODE_RADIO_OPTIMIZE handleTxStatus(NRF::SPI::Status status)
+{
+    if (txPending > 1) txPending = 1;
+    if (status.b.txFull) flushTx();
+    else txPending++;
+}
+
+
+static void SENSORNODE_RADIO_OPTIMIZE transmit(void* data, int length)
+{
+    handleTxStatus(radioDriver->radio->transmit(-1, data, length));
 }
 
 
@@ -95,8 +117,7 @@ void SENSORNODE_RADIO_OPTIMIZE handleDownload()
                     packet.args.commandResult.cmd = (enum RadioPacket::Command)0;
                     packet.args.commandResult.status = RadioPacket::StatusDataGap;
                     packet.args.commandResult.arg0 = -length;
-                    radioDriver->radio->transmit(-1, &packet, sizeof(packet) - sizeof(packet.args)
-                                                            + sizeof(packet.args.commandResult));
+                    transmit(&packet, sizeof(packet) - sizeof(packet.args) + sizeof(packet.args.commandResult));
                     return;
                 }
                 break;
@@ -109,7 +130,7 @@ void SENSORNODE_RADIO_OPTIMIZE handleDownload()
         packet.req = currentDownload.req;
         packet.args.downloadPacket.seq = currentDownload.seq++;
         if (!length) currentDownload.type = DownloadJob::None;
-        radioDriver->radio->transmit(-1, &packet, sizeof(packet) - sizeof(packet.args.downloadPacket.payload) + length);
+        transmit(&packet, sizeof(packet) - sizeof(packet.args.downloadPacket.payload) + length);
     }
 }
 
@@ -133,7 +154,8 @@ void SENSORNODE_RADIO_OPTIMIZE handleRadio()
     else sendBeacon |= TIMEOUT_EXPIRED(nextBeacon);
     if (sendBeacon)
     {
-        deepSleep &= !radioDriver->beacon->sendBeacon();
+        if (radioDriver->sleeping) radioDriver->wake();
+        handleTxStatus(radioDriver->beacon->sendBeacon());
         calcNextBeacon();
     }
 
@@ -147,13 +169,16 @@ void SENSORNODE_RADIO_OPTIMIZE transmittedHandler(bool success, int retransmissi
     else if (!success)
     {
         currentDownload.type = DownloadJob::None;
-        radioDriver->radio->flushTx();
+        flushTx();
     }
     else
     {
         handleDownload();
         calcTimeout();
+        if (txPending) txPending--;
     }
+    if (txPending > 1) txPending = 1;
+    if (!txPending) radioDriver->sleep();
 }
 
 
@@ -163,7 +188,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
     currentDownload.type = DownloadJob::None;
     if (length >= 2 && data[0] == 0xff && data[1] == 0xff)
     {
-        deepSleep &= !radioDriver->beacon->processPacket(data, length);
+        radioDriver->beacon->processPacket(data, length);
         updateBeaconInterval();
     }
     else
@@ -244,7 +269,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
                 packet->args.configResult.status = (RadioPacket::StatusCode)-length;
                 length = sizeof(*packet) - sizeof(packet->args) + sizeof(packet->args.configResult);
             }
-            radioDriver->radio->transmit(-1, data, length);
+            transmit(data, length);
             break;
         case RadioPacket::ConfigSet:
             packet->type = RadioPacket::ConfigResult;
@@ -294,7 +319,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
             default:
                 packet->args.configResult.status = RadioPacket::StatusUnknownCommand;
             }
-            radioDriver->radio->transmit(-1, data, sizeof(*packet) - sizeof(packet->args) + sizeof(packet->args.configResult));
+            transmit(data, sizeof(*packet) - sizeof(packet->args) + sizeof(packet->args.configResult));
             break;
         case RadioPacket::Command:
             packet->type = RadioPacket::CommandResult;
@@ -336,7 +361,7 @@ void SENSORNODE_RADIO_OPTIMIZE receivedHandler(int pipe, uint8_t* data, int leng
             default:
                 packet->args.commandResult.status = sensornode_handle_custom_command(packet, length);
             }
-            radioDriver->radio->transmit(-1, data, sizeof(*packet) - sizeof(packet->args) + sizeof(packet->args.commandResult));
+            transmit(data, sizeof(*packet) - sizeof(packet->args) + sizeof(packet->args.commandResult));
             break;
         case RadioPacket::DownloadMeta:
             currentDownload.req = packet->req;

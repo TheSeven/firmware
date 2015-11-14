@@ -17,8 +17,10 @@ class SensorNodeRadioDriver
 public:
     NRF::Radio* radio;
     NRFBeacon::Manager* beacon;
+    bool sleeping;
 
-    SensorNodeRadioDriver(NRF::Radio* radio, NRFBeacon::Manager* beacon) : radio(radio), beacon(beacon) {}
+    SensorNodeRadioDriver(NRF::Radio* radio, NRFBeacon::Manager* beacon)
+        : radio(radio), beacon(beacon), sleeping(false){}
 
     virtual void sleep() = 0;
     virtual void wake() = 0;
@@ -73,6 +75,7 @@ struct __attribute__((packed,aligned(4))) RadioPacket
         StatusOutOfMemory = 0x00000004,
         StatusHardwareError = 0x00000005,
         StatusDataGap = 0x00000006,
+        StatusDummy = 0xffffffff,
     };
 
     union __attribute__((packed)) ConfigArgument

@@ -9,6 +9,9 @@
 #include "storage.h"
 
 
+bool blinking;
+
+
 void SENSORNODE_CORE_OPTIMIZE startMeasurement()
 {
     measurementId++;
@@ -58,11 +61,24 @@ int SENSORNODE_CORE_OPTIMIZE main()
 
         handleRadio();
 
-        if (now < blinkUntil || blinkState)
+        if (now < blinkUntil)
         {
+            if (!blinking)
+            {
+                blinking = true;
+                GPIO::setPull(SENSORNODE_LEDPIN, GPIO::PULL_UP);
+            }
             blinkState ^= 1;
-            GPIO::setLevel(SENSORNODE_LEDPIN, blinkState);
+            if (blinkState) GPIO::setLevel(SENSORNODE_LEDPIN, true);
+            GPIO::setMode(SENSORNODE_LEDPIN, blinkState ? GPIO::MODE_OUTPUT : GPIO::MODE_ANALOG);
             deepSleep = false;
+        }
+        else if (blinking)
+        {
+            blinking = false;
+            GPIO::setLevel(SENSORNODE_LEDPIN, !radioDriver->sleeping);
+            GPIO::setMode(SENSORNODE_LEDPIN, GPIO::MODE_OUTPUT);
+            GPIO::setPull(SENSORNODE_LEDPIN, GPIO::PULL_NONE);
         }
 
         bool first = true;
@@ -99,18 +115,18 @@ int SENSORNODE_CORE_OPTIMIZE main()
         }
 
         enter_critical_section();
-        if (radioDriver->detectIRQ()) continue;
-        if (deepSleep)
+        if (!radioDriver->detectIRQ())
         {
-            int until = commTimeout;
-            if (TIME_AFTER(until, nextBeacon)) until = nextBeacon;
-            if (TIME_AFTER(until, nextSensor)) until = nextSensor;
-            if (!TIME_AFTER(until, now)) until = now + 1;
-            radioDriver->sleep();
-            rtcDriver->sleepUntil(until);
-            radioDriver->wake();
+            if (deepSleep && radioDriver->sleeping)
+            {
+                int until = commTimeout;
+                if (TIME_AFTER(until, nextBeacon)) until = nextBeacon;
+                if (TIME_AFTER(until, nextSensor)) until = nextSensor;
+                if (!TIME_AFTER(until, now)) until = now + 1;
+                rtcDriver->sleepUntil(until);
+            }
+            else idle();
         }
-        else idle();
         leave_critical_section();
     }
 }
