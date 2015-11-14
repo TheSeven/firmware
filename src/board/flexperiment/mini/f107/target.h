@@ -2,8 +2,12 @@
 
 #define BOARD_FLEXPERIMENT_MINI
 #define SOC_STM32F1XXXC
+#ifndef STM32_VOLTAGE
 #define STM32_VOLTAGE 3300
+#endif
+#ifndef FLEXPERIMENT_CUSTOM_CLOCKING
 #define STM32_CLOCKSOURCE_HSE
 #define STM32_HSE_CRYSTAL
 #define STM32_HSE_FREQUENCY 8000000
+#endif
 #include "soc/stm32/f1/target.h"
