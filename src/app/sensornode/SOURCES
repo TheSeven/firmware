@@ -36,3 +36,11 @@ sensor/temperature/htu21d.cpp
 #ifdef SENSORNODE_SENSOR_HUMIDITY_HTU21D
 sensor/humidity/htu21d.cpp
 #endif
+
+#ifdef SENSORNODE_SENSOR_TEMPERATURE_SI7021
+sensor/temperature/si7021.cpp
+#endif
+
+#ifdef SENSORNODE_SENSOR_HUMIDITY_SI7021
+sensor/humidity/si7021.cpp
+#endif
