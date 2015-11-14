@@ -10,6 +10,8 @@ dmxfixture/flexperiment/nano/tm1829
 nrftest/tx
 nrftest/rx
 sensornode/fpnano/temperature
+sensornode/fpnano/temphumid
+sensornode/fpmicro/temphumid
 nrfbridge
 microdisplaydemo
 ledplayer
