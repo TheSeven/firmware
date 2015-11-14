@@ -17,6 +17,10 @@ storage/spiflash.cpp
 rtc/stm32f0.cpp
 #endif
 
+#ifdef SENSORNODE_RTC_STM32F0_XTAL
+rtc/stm32f0_xtal.cpp
+#endif
+
 #ifdef SENSORNODE_SENSOR_POWERSUPPLY_STM32VCC
 sensor/powersupply/stm32vcc.cpp
 #endif
