@@ -187,8 +187,7 @@ void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::sleepUntil(int time)
     CR.b.ALRAE = true;
     CR.b.ALRAIE = true;
     STM32_RTC_REGS.CR.d32 = CR.d32;
-    enter_critical_section();
-    while (time > getTime())
+    if (time > getTime())
     {
 #ifndef DEBUG
         SCB->SCR = SCB_SCR_SLEEPDEEP_Msk;
@@ -196,7 +195,6 @@ void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::sleepUntil(int time)
         idle();
         SCB->SCR = 0;
     }
-    leave_critical_section();
 }
 
 
