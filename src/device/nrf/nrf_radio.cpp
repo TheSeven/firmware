@@ -27,6 +27,14 @@ NRF::SPI::Status NRF_OPTIMIZE NRF::Radio::setMode(bool receive)
     return writeReg(Reg_Config, &config, sizeof(config));
 }
 
+NRF::SPI::Status NRF_OPTIMIZE NRF::Radio::power(bool on)
+{
+    Config config;
+    readReg(Reg_Config, &config, sizeof(config));
+    config.b.powerUp = on;
+    return writeReg(Reg_Config, &config, sizeof(config));
+}
+
 NRF::SPI::Status NRF_OPTIMIZE NRF::Radio::setPacketSize(int pipe, int length)
 {
     return writeReg(Reg_RxDataLength0 + pipe, &length, 1);

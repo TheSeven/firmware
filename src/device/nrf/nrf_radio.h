@@ -66,6 +66,7 @@ namespace NRF
         SPI::Status setTxAddress(const uint8_t* address, int length);
         SPI::Status setRxAddress(int pipe, const uint8_t* address, int length);
         SPI::Status setMode(bool receive);
+        SPI::Status power(bool on);
         SPI::Status setPacketSize(int pipe, int length);
         SPI::Status transmit(int pipe, const void* data, int length);
 
