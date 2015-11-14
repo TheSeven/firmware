@@ -38,7 +38,7 @@ bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::processPacket(void* ptr, int len)
     return false;
 }
 
-bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::sendBeacon()
+NRF::SPI::Status NRFBEACON_OPTIMIZE NRFBeacon::Manager::sendBeacon()
 {
     Message beacon;
     beacon.protocol = 0xffff;
@@ -48,17 +48,16 @@ bool NRFBEACON_OPTIMIZE NRFBeacon::Manager::sendBeacon()
     {
         sendIdCount--;
         memcpy(&beacon.msg.beacon.payload, id, sizeof(*id));
-        radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + sizeof(*id));
+        return radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + sizeof(*id));
     }
     else if (localId)
     {
         beacon.msgType = MessageTypePayloadBeacon;
         if (!payload) payloadLen = 0;
         else memcpy(&beacon.msg.beacon.payload, payload, payloadLen);
-        radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + payloadLen);
+        return radio->transmit(-1, &beacon, sizeof(Message) - sizeof(beacon.msg.beacon.payload) + payloadLen);
     }
-    else radio->transmit(-1, &beacon, 2);
-    return true;
+    else return radio->transmit(-1, &beacon, 2);
 }
 
 void NRFBEACON_OPTIMIZE NRFBeacon::Manager::timeoutExpired()

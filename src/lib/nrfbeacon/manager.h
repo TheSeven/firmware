@@ -114,7 +114,7 @@ namespace NRFBeacon
             : radio(radio), id(id), localId(0), idleInterval(idleInterval), maxTimeout(maxTimeout),
               payloadLen(0), payload(NULL), interval(idleInterval * 100), timeout(0), sendIdCount(0) {}
         bool processPacket(void* data, int len);
-        bool sendBeacon();
+        NRF::SPI::Status sendBeacon();
         void timeoutExpired();
     };
 
