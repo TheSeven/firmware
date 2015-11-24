@@ -1,6 +1,13 @@
 #pragma once
 
 #include "global.h"
+#include "interface/storage/storage.h"
+
+
+#ifndef STM32FLASH_OPTIMIZE
+#define STM32FLASH_OPTIMIZE
+#endif
+
 
 #ifndef STM32_VOLTAGE
     #error Unknown STM32 operating voltage, cannot determine correct configuration
@@ -83,5 +90,23 @@ namespace STM32
     public:
         static void init();
     };
-}
 
+#if defined(SOC_STM32F0) || defined(SOC_STM32F1)
+    class __attribute__((packed,aligned(4))) FlashDriver final : public Storage
+    {
+        void waitIdle();
+        bool enableWrite();
+        void disableWrite(bool oldHSI);
+
+    public:
+        constexpr FlashDriver() : Storage(FLASH_SIZE, 1, FLASH_PAGESIZE, 2) {}
+        virtual enum Result reset();
+        virtual enum Result getStatus();
+        virtual enum Result read(uint32_t page, uint32_t len, void* buf);
+        virtual enum Result write(uint32_t page, uint32_t len, const void* buf);
+        virtual enum Result erase(uint32_t page, uint32_t len);
+    };
+
+    extern FlashDriver Flash;
+#endif
+}
