@@ -25,7 +25,7 @@ int DS1820_OPTIMIZE DS1820::readRawTemperature()
     uint16_t data;
     convertTemperature();
     readScratchpad((uint8_t*)&data, 2);
-    data = (data & 0xfff) | ((resolution - 9) << 12) | externalPower << 14;
+    data = (data & 0x8fff) | ((resolution - 9) << 12) | externalPower << 14;
     return data;
 }
 
