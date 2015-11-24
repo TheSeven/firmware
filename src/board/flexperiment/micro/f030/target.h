@@ -7,7 +7,6 @@
 #define STM32_VOLTAGE 3300
 #endif
 #ifndef FLEXPERIMENT_CUSTOM_CLOCKING
-#define STM32_CLOCKSOURCE_HSI48
-#define STM32_NO_PLL
+#define STM32_CLOCKSOURCE_HSI
 #endif
 #include "soc/stm32/f0/target.h"
