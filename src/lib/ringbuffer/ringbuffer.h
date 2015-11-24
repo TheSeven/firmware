@@ -10,8 +10,22 @@ private:
     volatile uint16_t tailPos;
     T buf[C];
 
+    inline void __attribute__((optimize("-Os"))) copyOne(void* dest, const void* src)
+    {
+        if (sizeof(T) == 1) *((uint8_t*)dest) = *((const uint8_t*)src);
+        else if (sizeof(T) == 2) *((uint16_t*)dest) = *((const uint16_t*)src);
+        else if (sizeof(T) == 4) *((uint32_t*)dest) = *((const uint32_t*)src);
+        else memcpy(dest, src, sizeof(T));
+    }
+
 public:
     constexpr RingBuffer() : headPos(0), tailPos(0) {}
+
+    void flush()
+    {
+        headPos = 0;
+        tailPos = 0;
+    }
 
     bool poke(const T* data)
     {
@@ -19,7 +33,7 @@ public:
         int free = tailPos - head - 1;
         if (free < 0) free += C;
         if (!free) return false;
-        memcpy(buf + head, data, sizeof(T));
+        copyOne(buf + head, data);
         return true;
     }
 
@@ -39,7 +53,7 @@ public:
         int free = tailPos - head - 1;
         if (free < 0) free += C;
         if (!free) return false;
-        memcpy(buf + head++, data, sizeof(T));
+        copyOne(buf + head++, data);
         if (head == C) head = 0;
         headPos = head;
         return true;
@@ -87,7 +101,7 @@ public:
         int used = headPos - tail;
         if (used < 0) used += C;
         if (!used) return false;
-        memcpy(buf + tail, data, sizeof(T));
+        copyOne(data, buf + tail);
         return true;
     }
 
@@ -107,7 +121,7 @@ public:
         int used = headPos - tail;
         if (used < 0) used += C;
         if (!used) return false;
-        memcpy(data, buf + tail++, sizeof(T));
+        copyOne(data, buf + tail++);
         if (tail == C) tail = 0;
         tailPos = tail;
         return true;
