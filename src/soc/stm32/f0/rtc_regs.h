@@ -40,17 +40,19 @@ struct __attribute__((packed)) STM32_RTC_REG_TYPE
         uint32_t d32;
         struct __attribute__((packed)) b
         {
-            uint32_t : 3;
+            uint32_t WUCKSEL : 3;
             uint32_t TSEDGE : 1;
             uint32_t REFCKON : 1;
             uint32_t BYPSHAD : 1;
             uint32_t FMT : 1;
             uint32_t : 1;
             uint32_t ALRAE : 1;
-            uint32_t : 2;
+            uint32_t : 1;
+            uint32_t WUTE : 1;
             uint32_t TSE : 1;
             uint32_t ALRAIE : 1;
-            uint32_t : 2;
+            uint32_t : 1;
+            uint32_t WUTIE : 1;
             uint32_t TSIE : 1;
             uint32_t ADD1H : 1;
             uint32_t SUB1H : 1;
@@ -75,7 +77,8 @@ struct __attribute__((packed)) STM32_RTC_REG_TYPE
             uint32_t INITF : 1;
             uint32_t INIT : 1;
             uint32_t ALRAF : 1;
-            uint32_t : 2;
+            uint32_t : 1;
+            uint32_t WUTF : 1;
             uint32_t TSF : 1;
             uint32_t TSOVF : 1;
             uint32_t TAMP1F : 1;
@@ -96,7 +99,7 @@ struct __attribute__((packed)) STM32_RTC_REG_TYPE
             uint32_t : 9;
         } b;
     } PRER;
-    uint32_t RESERVED1;
+    uint32_t WUTR;
     uint32_t RESERVED2;
     union ALRMAR
     {
