@@ -5,7 +5,7 @@
 #include "sys/util.h"
 
 
-__attribute__((weak)) int fault_handler()
+__attribute__((weak)) void fault_handler()
 {
     hang();
 }

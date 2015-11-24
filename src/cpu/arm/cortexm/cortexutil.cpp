@@ -53,7 +53,8 @@ uint32_t __attribute__((const)) CORTEXUTIL_OPTIMIZE reverse32(uint32_t data)
 
 extern "C" __attribute__((weak)) CORTEXUTIL_OPTIMIZE uint32_t __aeabi_idiv0()
 {
-    return (uint32_t)fault_handler();
+    fault_handler();
+    return 0;
 }
 
 extern "C" __attribute__((weak)) CORTEXUTIL_OPTIMIZE uint64_t __aeabi_ldiv0()

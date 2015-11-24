@@ -33,7 +33,7 @@ static inline unsigned int read_ipsr()
     return result;
 }
 
-int fault_handler();
+void fault_handler();
 
 #ifdef __cplusplus
 }
