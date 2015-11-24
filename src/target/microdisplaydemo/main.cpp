@@ -15,6 +15,13 @@ int main()
     lcd.init();
     lcd.print(0, 0, lcd.defaultFont, false, "Hello, World!");
     GPIO::configure(PIN_B8, GPIO::MODE_OUTPUT, false);
+    GPIO::configure(PIN_F0, GPIO::MODE_OUTPUT, false);
 
-    while (true);
+    while (true)
+    {
+        GPIO::setLevel(PIN_F0, true);
+        udelay(200000);
+        GPIO::setLevel(PIN_F0, false);
+        udelay(200000);
+    }
 }
