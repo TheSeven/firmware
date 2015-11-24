@@ -1,22 +1,23 @@
 #pragma once
 
 #define SOC_STM32F1
+#define FLASH_PAGESIZE 2048
 #ifdef STM32_USE_INOFFICIAL
-#define FLASH_SIZE 256K
+#define FLASH_SIZE 262144
 #else
 #if defined(SOC_STM32F1XXXR)
-#define FLASH_SIZE 64K
+#define FLASH_SIZE 65536
 #elif defined(SOC_STM32F1XXXB)
-#define FLASH_SIZE 128K
+#define FLASH_SIZE 131072
 #elif defined(SOC_STM32F1XXXC)
-#define FLASH_SIZE 256K
+#define FLASH_SIZE 262144
 #else
 #error Unknown STM32F1 variant!
 #endif
 #endif
-#define SRAM_SIZE 64K
+#define SRAM_SIZE 65536
 #define STM32_CAN_BOOT_FROM_RAM
-#define DFU_RAM_SIZE 4K
+#define DFU_RAM_SIZE 4096
 #include "soc/stm32/f1/clockgates.h"
 #include "soc/stm32/f1/resetlines.h"
 #define STM32_GPIO_DEF_FILE "soc/stm32/f1/gpio_defs.h"

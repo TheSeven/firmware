@@ -2,29 +2,31 @@
 
 #define SOC_STM32F0
 #if defined(SOC_STM32F030)
+#define FLASH_PAGESIZE 1024
 #if defined(SOC_STM32F0XXX4)
-#define FLASH_SIZE 16K
-#define SRAM_SIZE 4K
+#define FLASH_SIZE 16384
+#define SRAM_SIZE 4096
 #elif defined(SOC_STM32F0XXX6)
-#define FLASH_SIZE 32K
-#define SRAM_SIZE 4K
+#define FLASH_SIZE 32768
+#define SRAM_SIZE 4096
 #elif defined(SOC_STM32F0XXX8)
-#define FLASH_SIZE 64K
-#define SRAM_SIZE 8K
+#define FLASH_SIZE 65536
+#define SRAM_SIZE 8192
 #else
 #error Unknown STM32F030 variant!
 #endif
 #elif defined(SOC_STM32F072)
+#define FLASH_PAGESIZE 2048
 #if defined(SOC_STM32F0XXX8)
 #ifdef STM32_USE_INOFFICIAL
-#define FLASH_SIZE 128K
+#define FLASH_SIZE 131072
 #else
-#define FLASH_SIZE 64K
+#define FLASH_SIZE 65536
 #endif
-#define SRAM_SIZE 16K
+#define SRAM_SIZE 16384
 #elif defined(SOC_STM32F0XXXC)
-#define FLASH_SIZE 128K
-#define SRAM_SIZE 16K
+#define FLASH_SIZE 131072
+#define SRAM_SIZE 16384
 #else
 #error Unknown STM32F072 variant!
 #endif
