@@ -50,7 +50,7 @@ namespace STM32
         start();
         while (busy) idle();
         clockgate_enable(STM32_I2C_CLOCKGATE(index), false);
-        return error ?  ::I2C::RESULT_NAK :  ::I2C::RESULT_OK;
+        return error ? ::I2C::RESULT_NAK : ::I2C::RESULT_OK;
     }
 
     void I2C::advance()
@@ -142,18 +142,17 @@ namespace STM32
                 regs->CR2.d32 = CR2.d32;
             }
         }
-        else if (ISR.b.BERR || ISR.b.OVR || ISR.b.ARLO || ISR.b.TIMEOUT || ISR.b.ALERT || ISR.b.PECERR
-              || (ISR.b.STOPF && (totallen || !last)))
+        else if (ISR.b.BERR || ISR.b.ARLO || ISR.b.TIMEOUT)
+            error = true;
+        else if (ISR.b.OVR || ISR.b.PECERR || (ISR.b.STOPF && (totallen || !last)))
         {
             error = true;
-            union STM32_I2C_REG_TYPE::CR1 CR1 = { regs->CR1.d32 };
-            CR1.b.ERRIE = false;
-            regs->CR1.d32 = CR1.d32;
             union STM32_I2C_REG_TYPE::CR2 CR2 = { 0 };
             CR2.b.STOP = true;
             regs->CR2.d32 = CR2.d32;
         }
-        if (ISR.b.STOPF)
+        regs->ICR.d32 = ISR.d32;
+        if (!regs->ISR.b.BUSY)
         {
             busy = false;
             regs->CR1.d32 = 0;
