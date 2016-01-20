@@ -23,7 +23,7 @@ template<typename T, int S> class __attribute__((packed,aligned(4))) ConfigData 
 {
 public:
     constexpr CONFIGSTORE_OPTIMIZE ConfigData()
-        : ConfigDataHeader(((1ull << 32) >> __builtin_clz(sizeof(T) + 7)) - 8) {}
+        : ConfigDataHeader((((1ull << 32) >> __builtin_clz(sizeof(T) + 7)) + S - 1) / S * S - 8) {}
     T data;
     uint8_t padding[(((1ull << 32) >> __builtin_clz(sizeof(T) + 7)) + S - 1) / S * S - sizeof(T) - 8];
 };
