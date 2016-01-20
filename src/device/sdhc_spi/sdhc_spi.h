@@ -20,6 +20,8 @@ public:
     virtual enum Result write(uint32_t page, uint32_t len, const void* buf);
     virtual enum Result erase(uint32_t page, uint32_t len);
 
+    bool stayAwake(bool on);
+
 private:
     enum Result readInternal(uint32_t page, uint32_t len, void* buf);
     enum Result writeInternal(uint32_t page, uint32_t len, const void* buf);

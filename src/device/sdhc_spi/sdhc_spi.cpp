@@ -263,3 +263,8 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::erase(uint32_t page, uint32_t l
     reset();
     return eraseInternal(page, len);
 }
+
+bool SDHC_SPI_OPTIMIZE SDHC_SPI::stayAwake(bool on)
+{
+    return SPI::Device::stayAwake(on);
+}
