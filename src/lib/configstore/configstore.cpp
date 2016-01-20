@@ -80,7 +80,7 @@ uint32_t CONFIGSTORE_OPTIMIZE ConfigStore::getSize(Storage* storage)
 
 Storage::Result CONFIGSTORE_OPTIMIZE ConfigStore::save()
 {
-    if (crc32(data, data->size + sizeof(ConfigDataHeader) - sizeof(data->crc)) == data->crc)
+    if (crc32(&data->size, data->size + sizeof(ConfigDataHeader) - sizeof(data->crc)) == data->crc)
         return Storage::RESULT_OK;
     data->usn++;
     data->crc = crc32(&data->size, data->size + sizeof(ConfigDataHeader) - sizeof(data->crc));
