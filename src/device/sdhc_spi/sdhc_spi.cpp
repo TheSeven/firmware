@@ -99,6 +99,7 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::reset()
     select();
     deselect();
     deselbytes = 1;
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
     int tries = 10;
     int i;
     for (i = 0; i < tries; i++)
@@ -111,6 +112,10 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::reset()
         udelay(i * 10);
     }
     if (i >= tries) return RESULT_COMM_ERROR;
+#else
+    select();
+    if (sendCmd(0, 0) != 1) return RESULT_COMM_ERROR;
+#endif
     if (sendCmd(8, 0x1aa) == 1)
     {
         uint32_t ocr = readR3();
@@ -172,6 +177,10 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::readInternal(uint32_t page, uin
 {
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
+    sendCmd(12, 0);
+    waitIdle();
+#endif
     if (len == 1)
     {
         if (sendCmd(17, page) == 0 && readBlock(buf, 512))
@@ -200,9 +209,12 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::read(uint32_t page, uint32_t le
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
     enum Storage::Result rc = readInternal(page, len, buf);
     if (rc == RESULT_OK) return rc;
-    reset();
+    rc = reset();
+    if (rc != RESULT_OK) return rc;
+#endif
     return readInternal(page, len, buf);
 }
 
@@ -210,6 +222,10 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::writeInternal(uint32_t page, ui
 {
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
+    sendCmd(12, 0);
+    waitIdle();
+#endif
     if (len == 1)
     {
         if (sendCmd(24, page) == 0 && writeBlock(buf, 512, 0xfe) && waitIdle()) rc = RESULT_OK;
@@ -237,9 +253,12 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::write(uint32_t page, uint32_t l
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
     enum Storage::Result rc = writeInternal(page, len, buf);
     if (rc == RESULT_OK) return rc;
-    reset();
+    rc = reset();
+    if (rc != RESULT_OK) return rc;
+#endif
     return writeInternal(page, len, buf);
 }
 
@@ -247,6 +266,10 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::eraseInternal(uint32_t page, ui
 {
     enum Storage::Result rc = RESULT_COMM_ERROR;
     select();
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
+    sendCmd(12, 0);
+    waitIdle();
+#endif
     if (sendCmd(32, page) == 0 && sendCmd(33, page + len - 1) == 0 && sendCmd(38, 0) == 0 && waitIdle()) rc = RESULT_OK;
     deselect();
     return rc;
@@ -258,9 +281,12 @@ enum SDHC_SPI_OPTIMIZE Storage::Result SDHC_SPI::erase(uint32_t page, uint32_t l
     if (page >= pageCount || len > pageCount - page) return RESULT_INVALID_ARGUMENT;
     if (!len) return RESULT_OK;
     if (!sdhc) page *= 512;
+#ifdef SDHC_SPI_ENABLE_BUGGY_CARD_QUIRKS
     enum Storage::Result rc = eraseInternal(page, len);
     if (rc == RESULT_OK) return rc;
-    reset();
+    rc = reset();
+    if (rc != RESULT_OK) return rc;
+#endif
     return eraseInternal(page, len);
 }
 
