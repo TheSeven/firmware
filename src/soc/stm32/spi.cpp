@@ -82,7 +82,6 @@ namespace STM32
     uint8_t STM32_SPI_OPTIMIZE SPI::pushByte(uint8_t byte) const
     {
         volatile STM32_SPI_REG_TYPE* regs = spi_regs[index];
-        while (!(regs->SR.b.TXE));
         regs->DR = byte;
         while (!(regs->SR.b.RXNE));
         return regs->DR;
@@ -94,7 +93,9 @@ namespace STM32
         volatile STM32_SPI_REG_TYPE* regs = spi_regs[index];
         const uint8_t* indata = (const uint8_t*)inbuf;
         uint8_t* outdata = (uint8_t*)outbuf;
-        while (len--)
+#ifdef STM32_SPI_PIPELINE
+        regs->DR = indata ? *indata++ : 0xff;
+        while (--len)
         {
             while (!(regs->SR.b.TXE));
             regs->DR = indata ? *indata++ : 0xff;
@@ -102,6 +103,18 @@ namespace STM32
             uint8_t result = regs->DR;
             if (outdata) *outdata++ = result;
         }
+        while (!(regs->SR.b.RXNE));
+        uint8_t result = regs->DR;
+        if (outdata) *outdata++ = result;
+#else
+        while (len--)
+        {
+            regs->DR = indata ? *indata++ : 0xff;
+            while (!(regs->SR.b.RXNE));
+            uint8_t result = regs->DR;
+            if (outdata) *outdata++ = result;
+        }
+#endif
     }
 
     const SPI SPI::SPI1(0);
