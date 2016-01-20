@@ -21,6 +21,8 @@ public:
     virtual void writeData(void* data, int pixels);
     virtual void writeColor(uint32_t color, int pixels);
 
+    bool stayAwake(bool on);
+
 private:
     bool inDataMode;
     ::Display::DisplayMode currentMode;

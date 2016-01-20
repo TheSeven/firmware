@@ -6,19 +6,32 @@
 
 static const uint8_t hx8347_initscript[] =
 {
-  0x23, 0x8d,  // VCOM control 1 (VCOM offset)
-  0x24, 0x2f,  // VCOM control 2 (VCOMH)
-  0x25, 0x57,  // VCOM control 3 (VCOML)
-  0x18, 0x36,  // OSC control 1 (frame rate)
-  0x19, 0x01,  // OSC control 2 (OSC enable)
-  0x01, 0x00,  // Display mode control (standby, idle, invert, partial, scroll)
-  0x1f, 0x88,  // Power control 6 (standby, charge pump control)
-  0x1f, 0x80,  // Power control 6 (standby, charge pump control)
-  0x1f, 0x90,  // Power control 6 (standby, charge pump control)
-  0x1f, 0xd0,  // Power control 6 (standby, charge pump control)
-  0x17, 0x05,  // COLMOD (bits per pixel)
-  0x28, 0x38,  // Display control 3 (display enable)
-  0
+    //0xea, 0x00,
+    //0xeb, 0x20,
+    //0xec, 0x0c,
+    //0xed, 0xc4,
+    //0xe8, 0x40,
+    //0xe9, 0x38,
+    //0xf1, 0x01,
+    //0xf2, 0x10,
+    //0x27, 0xa3,
+    //0x1b, 0x1b,
+    //0x1a, 0x01,
+    0x23, 0x8d,  // VCOM control 1 (VCOM offset)
+    0x24, 0x2f,  // VCOM control 2 (VCOMH)
+    0x25, 0x57,  // VCOM control 3 (VCOML)
+    0x18, 0x36,  // OSC control 1 (frame rate)
+    0x19, 0x01,  // OSC control 2 (OSC enable)
+    0x01, 0x00,  // Display mode control (standby, idle, invert, partial, scroll)
+    0x1f, 0x88,  // Power control 6 (standby, charge pump control)
+    0x1f, 0x80,  // Power control 6 (standby, charge pump control)
+    0x1f, 0x90,  // Power control 6 (standby, charge pump control)
+    0x1f, 0xd0,  // Power control 6 (standby, charge pump control)
+    0x17, 0x05,  // COLMOD (bits per pixel)
+    //0x36, 0x00,
+    0x16, 0x08,  // Entry mode
+    0x28, 0x38,  // Display control 3 (display enable)
+    0
 };
 
 
@@ -34,6 +47,7 @@ HX8347::HX8347(const SPI::Bus* bus, GPIO::Pin cspin, int frequency)
 void HX8347::select()
 {
     Device::select();
+    if (inDataMode) pushByte(0x72);
 }
 
 void HX8347::deselect()
@@ -78,7 +92,6 @@ void HX8347::powerUp()
 void HX8347::init()
 {
     powerUp();
-    writeReg(0x16, 0x08);
     clear(0);
     writeReg(0x28, 0x3c);
 }
@@ -126,8 +139,6 @@ void HX8347::setDirection(Direction direction)
 
 void HX8347::setRange(int row, int col, int height, int width)
 {
-    if (direction.hInvert) col = 319 - col;
-    if (direction.vInvert) row = 239 - row;
     if (direction.vertical)
     {
         int temp = row;
@@ -161,4 +172,9 @@ void HX8347::writeColor(uint32_t color, int pixels)
         pushByte(color & 0xff);
         pushByte(color >> 8);
     }
+}
+
+bool HX8347::stayAwake(bool on)
+{
+    return SPI::Device::stayAwake(on);
 }
