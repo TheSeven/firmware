@@ -387,7 +387,7 @@ void printNumber(FatFs::File* file, int32_t number)
 #ifdef HAVE_LCD
 int printTempLCD(int row, char label, int32_t number)
 {
-    return lcd.printf(row, 0, font, 0, "%c:%3.3D°C ", label, number);
+    return lcd.printf(row, 0, font, 0, "%c:%7.3D°C ", label, number);
 }
 int printVoltLCD(int row, char label, int32_t number)
 {
