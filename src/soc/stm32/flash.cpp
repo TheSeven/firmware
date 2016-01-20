@@ -98,7 +98,7 @@ namespace STM32
         union STM32_FLASH_REG_TYPE::CR CRPG = { CR.d32 };
         CRPG.b.PG = true;
         STM32_FLASH_REGS.CR.d32 = CRPG.d32;
-        while (len--)
+        while (len)
         {
             *wptr++ = *rptr++;
             waitIdle();
@@ -113,6 +113,7 @@ namespace STM32
                 result = RESULT_UNKNOWN_ERROR;
                 break;
             }
+            len -= programSize;
         }
         STM32_FLASH_REGS.CR.d32 = CR.d32;
         disableWrite(oldHSI);
@@ -125,11 +126,15 @@ namespace STM32
             return RESULT_INVALID_ARGUMENT;
         Result result = RESULT_OK;
         bool oldHSI = enableWrite();
-        STM32_FLASH_REGS.CR.b.PER = true;
+        union STM32_FLASH_REG_TYPE::CR CR = { STM32_FLASH_REGS.CR.d32 };
+        union STM32_FLASH_REG_TYPE::CR CRPER = { CR.d32 };
+        CRPER.b.PER = true;
+        STM32_FLASH_REGS.CR.d32 = CRPER.d32;
+        CRPER.b.STRT = true;
         while (len)
         {
-            STM32_FLASH_REGS.AR = page;
-            STM32_FLASH_REGS.CR.b.STRT = true;
+            STM32_FLASH_REGS.AR = 0x08000000 + page;
+            STM32_FLASH_REGS.CR.d32 = CRPER.d32;
             waitIdle();
             if (STM32_FLASH_REGS.SR.b.EOP)
             {
