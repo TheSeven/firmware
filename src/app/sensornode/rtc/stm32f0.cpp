@@ -81,7 +81,7 @@ void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::calibrate()
     if (rtcFrequency == newFreq) return;
     int capture;
     do capture = STM32_RTC_REGS.SSR;
-    while (capture < 100);
+    while (capture < 100 || capture > 32767);
     int start = read_usec_timer();
     union STM32_RTC_REG_TYPE::ISR ISR = { 0 };
     ISR.b.INIT = true;
@@ -169,7 +169,7 @@ int SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::getTime()
 
 void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::sleepUntil(int time)
 {
-    if (time <= getTime()) return;
+    if (time <= getTimeInternal()) return;
     int seconds = (time - timeOffset) % 3600;
     int minutes = seconds / 60;
     seconds = seconds % 60;
@@ -183,11 +183,12 @@ void SENSORNODE_RTC_OPTIMIZE SensorNodeRTCSTM32::sleepUntil(int time)
     ALRMAR.b.MNU = minutes % 10;
     ALRMAR.b.ST = seconds / 10;
     ALRMAR.b.SU = seconds % 10;
+    while (STM32_RTC_REGS.ISR.b.SHPF);
     STM32_RTC_REGS.ALRMAR.d32 = ALRMAR.d32;
     CR.b.ALRAE = true;
     CR.b.ALRAIE = true;
     STM32_RTC_REGS.CR.d32 = CR.d32;
-    if (time > getTime())
+    if (time > getTimeInternal())
     {
 #ifndef DEBUG
         SCB->SCR = SCB_SCR_SLEEPDEEP_Msk;

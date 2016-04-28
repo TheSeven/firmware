@@ -244,7 +244,7 @@ int SENSORNODE_STORAGE_OPTIMIZE getHistorySensorData(uint32_t measurementId, uin
         addr = histPtr.address + sizeof(PaddedDataHeader) + offset;
     }
     storageDriver->stayAwake(false);
-    if (addr == 0xffffffff) return oldest == 0xffffffff || *dataOffset > oldest ? 0 : *dataOffset- oldest;
+    if (addr == 0xffffffff) return oldest == 0xffffffff || *dataOffset > oldest ? 0 : *dataOffset - oldest;
     uint32_t len = MIN(maxLen, step - addr % step);
     if (storageDriver->dataStorage->read(addr, len, ptr) != Storage::RESULT_OK) hang();
     while (len && entryIsEmpty(((uint8_t*)ptr) + len, histPtr.d.bytesPerPoint)) len -= histPtr.d.bytesPerPoint;
