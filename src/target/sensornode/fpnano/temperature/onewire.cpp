@@ -25,7 +25,7 @@ bool ONEWIRE_OPTIMIZE OneWire::Bus::reset() const
 }
 
 
-void ONEWIRE_OPTIMIZE OneWire::Bus::writeBit(bool bit) const
+void ONEWIRE_OPTIMIZE OneWire::Bus::writeBit(bool bit, bool keepLocked) const
 {
     int time = read_usec_timer();
     STM32_GPIO_REGS(pin.pin >> 4).BSRR.d32 = 0x10000 << (pin.pin & 0xf);
@@ -35,7 +35,7 @@ void ONEWIRE_OPTIMIZE OneWire::Bus::writeBit(bool bit) const
 }
 
 
-bool ONEWIRE_OPTIMIZE OneWire::Bus::readBit() const
+bool ONEWIRE_OPTIMIZE OneWire::Bus::readBit(bool keepLocked) const
 {
     int time = read_usec_timer();
     STM32_GPIO_REGS(pin.pin >> 4).BSRR.d32 = 0x10000 << (pin.pin & 0xf);

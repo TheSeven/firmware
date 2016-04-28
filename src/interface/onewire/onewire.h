@@ -20,17 +20,16 @@ namespace OneWire
         bool reset() const;
         void select(uint64_t deviceId) const;
         void selectAll() const;
-        void writeBit(bool bit) const;
-        void writeByte(uint8_t byte) const;
-        void writeBytes(const uint8_t* data, int len) const;
-        bool readBit() const;
-        uint8_t readByte() const;
-        void readBytes(uint8_t* data, int len) const;
+        void writeBit(bool bit, bool keepLocked) const;
+        void writeByte(uint8_t byte, bool keepLocked) const;
+        void writeBytes(const uint8_t* data, int len, bool keepLocked) const;
+        bool readBit(bool keepLocked) const;
+        uint8_t readByte(bool keepLocked) const;
+        void readBytes(uint8_t* data, int len, bool keepLocked) const;
         void turnOnPower() const;
         void turnOffPower() const;
         void resetDiscovery();
         uint64_t* discoverDevice();
-        static uint8_t crc8(const uint8_t* data, int len) __attribute__((pure));
 
     private:
         static int delay(int time);
@@ -47,12 +46,12 @@ namespace OneWire
         constexpr Device(const Bus* bus, uint64_t deviceId) : bus(bus), deviceId(deviceId) {}
         void sleep() const;
         void select() const;
-        void writeBit(bool bit) const;
-        void writeByte(uint8_t byte) const;
-        void writeBytes(const uint8_t* data, int len) const;
-        bool readBit() const;
-        uint8_t readByte() const;
-        void readBytes(uint8_t* data, int len) const;
+        void writeBit(bool bit, bool keepLocked) const;
+        void writeByte(uint8_t byte, bool keepLocked) const;
+        void writeBytes(const uint8_t* data, int len, bool keepLocked) const;
+        bool readBit(bool keepLocked) const;
+        uint8_t readByte(bool keepLocked) const;
+        void readBytes(uint8_t* data, int len, bool keepLocked) const;
         void turnOnPower() const;
         void turnOffPower() const;
         const uint64_t* getDeviceId() const;

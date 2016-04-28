@@ -1,1 +1,7 @@
+#include "global.h"
+
 ../../interface/onewire
+
+#ifdef DS1820_CHECK_CRC
+../../lib/crc8
+#endif
