@@ -2,9 +2,8 @@
 #include "app/main.h"
 #include "soc/stm32/gpio.h"
 #include "soc/stm32/f0/usb.h"
-
-#include "common.h"
 #include "sys/util.h"
+#include "common.h"
 #include "scsi.h"
 
 
@@ -633,4 +632,9 @@ bool usb_poll()
     lcd.print(0, 0, lcd.defaultFont, 0, "USB mode          ");
     while (umsConfig.interface.altSetting.handleAsync()) idle();
     return true;
+}
+
+bool usb_busy()
+{
+    return umsConfig.interface.altSetting.isConnected();
 }

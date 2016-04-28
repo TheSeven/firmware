@@ -1,7 +1,5 @@
 #include "global.h"
 #include "app/main.h"
-
-#include "common.h"
 #include "sys/time.h"
 #include "sys/util.h"
 #include "soc/stm32/gpio.h"
@@ -10,7 +8,9 @@
 #include "device/ws2811/stm32/ws2811_stm32.h"
 #include "interface/clockgate/clockgate.h"
 #include "lib/fatfs/fatfs.h"
+#include "common.h"
 #include "usb.h"
+#include "serial.h"
 
 
 #define FLASH false
@@ -47,19 +47,25 @@ static union
 } buffer;
 static uint8_t dmabuf[24 * LEDSTRIP_PIXELS_PER_IRQ * 2];
 static void* outputPtr;
-static bool usb_activity;
+static bool restart_main_loop;
 
 static const WS2811::STM32Driver::Config ledConfig = { dmabuf, 1, 0, 3, 1, 60, 12, 29, LEDSTRIP_PIXELS_PER_IRQ, 0, 1 };
 static WS2811::STM32Driver ledStrip(&ledConfig);
 
 
-void pushPixels(int length)
+static bool handle_external_access()
+{
+    if (usb_poll() || serial_poll()) restart_main_loop = true;
+    return restart_main_loop;
+}
+
+static void pushPixels(int length)
 {
     outputPtr = (void*)*buffer.pixelRow;
     ledStrip.sendFrame(&outputPtr, length);
 }
 
-void setPixels(uint32_t pattern, uint32_t color)
+static void setPixels(uint32_t pattern, uint32_t color)
 {
     uint8_t* ptr = *buffer.pixelRow;
     for (int i = 0; i < 32; i++)
@@ -80,16 +86,14 @@ void setPixels(uint32_t pattern, uint32_t color)
     }
 }
 
-void delay(int time)
+static void delay(int time)
 {
-    if (usb_activity) time = 0;
+    if (restart_main_loop) return;
     int timeout = TIMEOUT_SETUP(time);
-    while (!TIMEOUT_EXPIRED(timeout))
-        if (usb_poll())
-            usb_activity = true;
+    while (!TIMEOUT_EXPIRED(timeout) && !handle_external_access());
 }
 
-void flash(uint32_t pattern, uint32_t color, uint32_t onTime, uint32_t offTime, uint32_t count)
+static void flash(uint32_t pattern, uint32_t color, uint32_t onTime, uint32_t offTime, uint32_t count)
 {
     while (count--)
     {
@@ -104,7 +108,7 @@ void flash(uint32_t pattern, uint32_t color, uint32_t onTime, uint32_t offTime, 
     }
 }
 
-void display(char* text)
+static void display(const char* text)
 {
     lcd.clear();
     lcd.print(0, 0, lcd.defaultFont, 0, text);
@@ -138,12 +142,13 @@ int main()
     CR1.b.CEN = true;
     STM32_TIM16_REGS.CR1.d32 = CR1.d32;
 
+    serial_init();
     usb_init();
 
     while (true)
     {
-        usb_activity = false;
-        usb_poll();
+        restart_main_loop = false;
+        handle_external_access();
 
         memset(&buffer, 0, sizeof(buffer));
         udelay(1000000);
@@ -188,7 +193,7 @@ int main()
         flash(0x00000038, 0x101010, 0, 900000, 1);
         flash(0x00000006, 0x101010, 0, 900000, 1);
         flash(0x00000001, 0x101010, 0, 900000, 1);
-        if (usb_activity) continue;
+        if (restart_main_loop) continue;
 
         display("Playing");
         int nextFrame = TIMEOUT_SETUP(0);
@@ -204,7 +209,7 @@ int main()
                 while (ledStrip.isSending());
             }
 
-            if (usb_poll()) break;
+            if (handle_external_access()) break;
             if (file.read(*buffer.pixelRow, 3 * pixels, &read) != FR_OK) break;
             if (read != 3 * pixels) break;
             for (uint32_t i = 0; i < pixels; i++)
@@ -215,7 +220,7 @@ int main()
                 buffer.pixelRow[i][2] = tmp;
             }
 
-            if (usb_poll()) break;
+            if (handle_external_access()) break;
             while (!TIMEOUT_EXPIRED(nextFrame));
             nextFrame = TIMEOUT_SETUP(FRAMETIME);
             pushPixels(pixels);
