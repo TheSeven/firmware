@@ -70,7 +70,8 @@ struct __attribute__((packed)) STM32_RTC_REG_TYPE
         struct __attribute__((packed)) b
         {
             uint32_t ALRAWF : 1;
-            uint32_t : 2;
+            uint32_t : 1;
+            uint32_t WUTWF : 1;
             uint32_t SHPF : 1;
             uint32_t INITS : 1;
             uint32_t RSF : 1;
