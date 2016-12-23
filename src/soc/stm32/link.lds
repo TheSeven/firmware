@@ -32,6 +32,10 @@
 #define STACK_SIZE 0x1000
 #endif
 
+_stack_size = STACK_SIZE;
+
+ENTRY(_irqvectors)
+
 MEMORY
 {
     FLASH (rx) : ORIGIN = FLASH_BASE, LENGTH = FLASH_SIZE
@@ -45,10 +49,6 @@ MEMORY
     SRAM (rwx) : ORIGIN = SRAM_BASE, LENGTH = SRAM_SIZE
 #endif
 }
-
-_stack_size = STACK_SIZE;
-
-ENTRY(_irqvectors)
 
 SECTIONS
 {
@@ -82,6 +82,9 @@ SECTIONS
         . = . + _stack_size;
         . = ALIGN(1 << CACHEALIGN_BITS);
         _stack_end = .;
+        *(.stack)
+        *(.stack.*)
+        _stacks_end = .;
     } >STACK_REGION
 
     .data : AT ( _data_src )
