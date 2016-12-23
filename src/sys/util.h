@@ -115,6 +115,7 @@ extern "C"
     __attribute__((noreturn)) void reset();
     __attribute__((noreturn)) void hang();
     void idle();
+    void breakpoint();
     void __cxa_pure_virtual();
     uint64_t __aeabi_ldiv0();
     uint32_t __aeabi_idiv0();
@@ -135,6 +136,7 @@ extern "C"
     void* memset(void* dst, int val, size_t len);
     int memcmp(const void* a, const void* b, size_t len);
     size_t strlen(const char* string);
+    extern const char hextab[16];
     void to_hex(char* dest, int len, uint32_t value);
 #ifdef __cplusplus
 }

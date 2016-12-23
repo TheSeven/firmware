@@ -1,13 +1,18 @@
 #include "global.h"
 #include "sys/util.h"
 
-__attribute__((pure,weak)) void idle()
+__attribute__((weak,noinline)) void idle()
+{
+}
+
+__attribute__((weak,noinline)) void breakpoint()
 {
 }
 
 __attribute__((noreturn,weak)) void hang()
 {
     enter_critical_section();
+    breakpoint();
     while (true) idle();
 }
 
@@ -172,7 +177,7 @@ __attribute__((weak)) size_t strlen(const char* string)
     return pos - string - 1;
 }
 
-static const char hextab[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+const char hextab[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 void to_hex(char* dest, int len, uint32_t value)
 {
