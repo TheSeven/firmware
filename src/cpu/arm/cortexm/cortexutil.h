@@ -13,12 +13,12 @@ extern "C"
 
 static inline void WFI()
 {
-    __asm__ volatile("wfi");
+    __asm__ volatile("wfi" ::: "memory");
 }
 
 static inline void WFE()
 {
-    __asm__ volatile("wfe");
+    __asm__ volatile("wfe" ::: "memory");
 }
 
 static inline void SEV()
