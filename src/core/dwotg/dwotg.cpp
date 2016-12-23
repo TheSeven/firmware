@@ -83,7 +83,7 @@ void DWOTG::tryPush(int ep)
     int maxpacket = ep ? regs->inep_regs[ep].diepctl.b.mps : 64;
     DWOTGRegs::hnptxsts fifospace = { regs->gregs.hnptxsts.d32 };
     int words = (MIN(maxpacket, bytesleft) + 3) >> 2;
-    if (fifospace.b.nptxqspcavail && fifospace.b.nptxfspcavail << 2 >= words)
+    if (fifospace.b.nptxqspcavail && fifospace.b.nptxfspcavail >= words)
         while (words--) regs->dfifo[ep][0] = *endpoints[ep].txAddr++;
     if (!words && bytesleft <= maxpacket) return;
     regs->gregs.gintmsk.b.nptxfempty = true;
