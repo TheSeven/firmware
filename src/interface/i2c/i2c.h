@@ -14,13 +14,16 @@ namespace I2C
         RESULT_UNSUPPORTED,
         RESULT_UNKNOWN_ERROR,
         RESULT_NAK,
+        RESULT_TIMEOUT,
+        RESULT_COLLISION,
     };
 
     class __attribute__((packed,aligned(4))) Transaction final
     {
     public:
         uint32_t address : 10;
-        uint32_t reserved : 14;
+        uint32_t reserved : 6;
+        uint32_t timeout : 8;
         uint32_t transferCount : 8;
         class __attribute__((packed,aligned(4))) Transfer final
         {
@@ -39,12 +42,13 @@ namespace I2C
                 void* rxbuf;
             };
 
+            constexpr Transfer() : type(TYPE_TX), len(0), txbuf(NULL) {}
             constexpr Transfer(Type type, uint16_t len, const void* buf)
                 : type(type), reserved(0), len(len), txbuf(buf) {}
         } transfers[];
 
         constexpr Transaction(uint32_t address, uint32_t transferCount)
-            : address(address), reserved(0), transferCount(transferCount) {}
+            : address(address), reserved(0), timeout(0), transferCount(transferCount) {}
     };
 
     class __attribute__((packed,aligned(4))) Bus
