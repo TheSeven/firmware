@@ -51,11 +51,13 @@ private:
 public:
     void handleIrqInternal();
     constexpr DWOTG(const ::USB::Descriptor::DeviceDescriptor* deviceDescriptor,
+                    const ::USB::Descriptor::BOSDescriptor* bosDescriptor,
                     const ::USB::Descriptor::StringDescriptor* const* stringDescriptors, uint8_t stringDescriptorCount,
                     ::USB::Configuration* const* configurations, uint8_t configurationCount,
-                    volatile DWOTGRegs::core_regs* regs, bool phy16bit, bool phyUlpi, bool useDma, bool sharedTxFifo,
-                    bool disableDoubleBuffering, uint8_t fifoCount, uint16_t totalFifoSize, uint16_t* fifoSizeList)
-        : USB(deviceDescriptor, stringDescriptors, stringDescriptorCount,
+                    volatile DWOTGRegs::core_regs* regs, bool phy16bit, bool phyUlpi, bool useDma,
+                    bool sharedTxFifo, bool disableDoubleBuffering,
+                    uint8_t fifoCount, uint16_t totalFifoSize, const uint16_t* fifoSizeList)
+        : USB(deviceDescriptor, bosDescriptor, stringDescriptors, stringDescriptorCount,
               configurations, configurationCount, &buffer, true),
           regs(regs), phy16bit(phy16bit), phyUlpi(phyUlpi), useDma(useDma), sharedTxFifo(sharedTxFifo),
           disableDoubleBuffering(disableDoubleBuffering), fifoCount(fifoCount), totalFifoSize(totalFifoSize),

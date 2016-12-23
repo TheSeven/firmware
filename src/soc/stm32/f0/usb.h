@@ -42,11 +42,12 @@ namespace STM32
     public:
         static void handleIrq();
         constexpr USB(const ::USB::Descriptor::DeviceDescriptor* deviceDescriptor,
+                      const ::USB::Descriptor::BOSDescriptor* bosDescriptor,
                       const ::USB::Descriptor::StringDescriptor* const* stringDescriptors,
                       uint8_t stringDescriptorCount, ::USB::Configuration* const* configurations,
                       uint8_t configurationCount)
-            : ::USB::USB(deviceDescriptor, stringDescriptors, stringDescriptorCount, configurations, configurationCount,
-                         &buffer, false), epState{}, pendingAddress(0) {}
+            : ::USB::USB(deviceDescriptor, bosDescriptor, stringDescriptors, stringDescriptorCount, configurations,
+                         configurationCount, &buffer, false), epState{}, pendingAddress(0) {}
     };
 
 }

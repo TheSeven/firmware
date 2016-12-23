@@ -1,12 +1,13 @@
 #pragma once
 
 #include "global.h"
+#include "sys/util.h"
 
 
 #define USB_DECLARE_STRDESC(str) \
-    struct \
+    struct  __attribute__((packed)) \
     { \
-        USB::Descriptor::StringDescriptor header = USB::Descriptor::StringDescriptor(ARRAYLEN(str) - 1); \
+        ::USB::Descriptor::StringDescriptor header{ARRAYLEN(str) - 1}; \
         char16_t string[ARRAYLEN(str)] = str; \
     }
 
@@ -78,6 +79,10 @@ namespace USB
             OTG = 9,
             Debug = 10,
             InterfaceAssociation = 11,
+            BOS = 15,
+            DeviceCapability = 16,
+            SuperSpeedUSBEndpointCompanion = 48,
+            SuperSpeedPlusIsochronousEndpointCompanion = 49,
         };
 
         struct __attribute__((packed)) Header
@@ -175,6 +180,58 @@ namespace USB
             constexpr StringDescriptor(unsigned int stringLength)
                 : Header(String, sizeof(StringDescriptor) + stringLength * sizeof(char16_t)), wString{} {}
         };
+
+        struct __attribute__((packed)) BOSDescriptor : public Header
+        {
+            uint16_t wTotalLength;
+            uint8_t bNumDeviceCaps;
+            constexpr BOSDescriptor(uint16_t totalLen, uint8_t numCaps)
+                : Header(BOS, sizeof(BOSDescriptor)), wTotalLength(totalLen), bNumDeviceCaps(numCaps) {}
+        };
+
+        namespace Capability
+        {
+            enum __attribute__((packed)) Type
+            {
+                Type_WirelessUSB = 1,
+                Type_USB20Extension = 2,
+                Type_SuperSpeedUSB = 3,
+                Type_ContainerID = 4,
+                Type_Platform = 5,
+                Type_PowerDeliveryCapability = 6,
+                Type_BatteryInfoCapability = 7,
+                Type_PDConsumerPortCapability = 8,
+                Type_PDProviderPortCapability = 9,
+                Type_SuperSpeedPlus = 10,
+                Type_PrecisionTimeMeasurement = 11,
+                Type_WirelessUSBExt = 12,
+            };
+
+            struct __attribute__((packed)) UUID
+            {
+                uint32_t timeLow;
+                uint16_t timeMid;
+                uint16_t timeHighVersion;
+                uint8_t clkSeq[2];
+                uint8_t node[6];
+            };
+
+            struct __attribute__((packed)) Header : ::USB::Descriptor::Header
+            {
+                Type bDevCapabilityType : 8;
+                constexpr Header(Type type, uint8_t len)
+                    : ::USB::Descriptor::Header(DeviceCapability, len), bDevCapabilityType(type) {}
+            };
+
+            struct __attribute__((packed)) Platform : public Header
+            {
+                uint8_t bReserved;
+                UUID platformCapabilityUUID;
+                constexpr Platform(UUID capabilityUUID, uint8_t dataLen)
+                    : Header(Type_Platform, sizeof(Platform) + dataLen), bReserved(0),
+                      platformCapabilityUUID(capabilityUUID) {}
+            };
+        }
     }
 
     union __attribute__((packed)) BmRequestType
@@ -185,6 +242,7 @@ namespace USB
             Interface = 1,
             Endpoint = 2,
             Other = 3,
+            VendorSpecific = 31,
         };
         enum __attribute__((packed)) Type
         {
@@ -218,6 +276,19 @@ namespace USB
         GetInterface = 10,
         SetInterface = 11,
         SynchFrame = 12,
+        SetEncryption = 13,
+        GetEncryption = 14,
+        SetHandshake = 15,
+        GetHandshake = 16,
+        SetConnection = 17,
+        SetSecurityData = 18,
+        GetSecurityData = 19,
+        SetWUSBData = 20,
+        LoopbackDataWrite = 21,
+        LoopbackDataRead = 22,
+        SetInterfaceDS = 23,
+        SetSEL = 48,
+        SetIsochDelay = 49,
     };
 
     struct __attribute__((packed,aligned(4))) SetupPacket
@@ -332,6 +403,7 @@ namespace USB
         uint8_t stringDescriptorCount;
         uint8_t configurationCount;
         const Descriptor::DeviceDescriptor* deviceDescriptor;
+        const Descriptor::BOSDescriptor* bosDescriptor;
         const Descriptor::StringDescriptor* const* stringDescriptors;
         Configuration* const* configurations;
         uint8_t currentAddress;
@@ -339,12 +411,14 @@ namespace USB
         uint8_t needsAlign;
         bool highSpeed;
         constexpr USB(const Descriptor::DeviceDescriptor* deviceDescriptor,
+                      const Descriptor::BOSDescriptor* bosDescriptor,
                       const Descriptor::StringDescriptor* const* stringDescriptors, uint8_t stringDescriptorCount,
                       Configuration* const* configurations, uint8_t configurationCount, void* buffer, bool needsAlign)
             : buffer((Buffer*)buffer), busResetHook(NULL), ctrlRequestHook(NULL), ep0SetupHook(NULL),
               ep0RxCallback(NULL), ep0TxCallback(NULL), ep0TxPtr(NULL), ep0TxLen(0),
               stringDescriptorCount(stringDescriptorCount), configurationCount(configurationCount),
-              deviceDescriptor(deviceDescriptor), stringDescriptors(stringDescriptors), configurations(configurations),
+              deviceDescriptor(deviceDescriptor), bosDescriptor(bosDescriptor),
+              stringDescriptors(stringDescriptors), configurations(configurations),
               currentAddress(0), currentConfiguration(0), needsAlign(needsAlign), highSpeed(false) {}
     };
 

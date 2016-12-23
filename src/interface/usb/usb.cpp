@@ -81,6 +81,11 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
                     addr = deviceDescriptor;
                     size = deviceDescriptor->bLength;
                     break;
+                case Descriptor::BOS:
+                    if ((packet->wValue & 0xff) || packet->wIndex || !bosDescriptor) break;
+                    addr = bosDescriptor;
+                    size = bosDescriptor->wTotalLength;
+                    break;
                 case Descriptor::Configuration:
                     if (packet->wIndex
                      || (packet->wValue & 0xff) >= configurationCount) break;
@@ -92,6 +97,7 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
                     addr = stringDescriptors[packet->wValue & 0xff];
                     size = stringDescriptors[packet->wValue & 0xff]->bLength;
                     break;
+                default: break;
                 }
                 if (size > packet->wLength) size = packet->wLength;
                 break;
@@ -123,6 +129,7 @@ void USB::USB::handleEp0Setup(SetupPacket* packet)
             default: break;
             }
             break;
+        default: break;
         }
         break;
     case BmRequestType::Interface:
