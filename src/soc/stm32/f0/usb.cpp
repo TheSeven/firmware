@@ -63,7 +63,6 @@ void STM32::USB::drvStart()
     irq_enable(usb_IRQn, true);
 
     // Soft connect
-    CR.d32 = STM32_CRS_REGS.CR.d32;
     union STM32_USB_REG_TYPE::BCDR BCDR = { 0 };
     BCDR.b.DPPU = true;
     STM32_USB_REGS.BCDR.d32 = BCDR.d32;
