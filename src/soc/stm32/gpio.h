@@ -238,6 +238,9 @@ namespace STM32
         };
         static const PinController Controller;
 
+        static constexpr int getPort(::GPIO::Pin pin) { return pin.pin >> 4; }
+        static constexpr int getPin(::GPIO::Pin pin) { return pin.pin & 0xf; }
+
         static void init();
 
     };
