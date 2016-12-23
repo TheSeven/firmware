@@ -78,6 +78,13 @@ bool PCD8544::jump(int row, int col)
     return true;
 }
 
+void PCD8544::clearRows(int row, int count)
+{
+    jump(row, 0);
+    for (int i = 0; i < count * 84; i++) pushByte(0);
+    deselect();
+}
+
 int PCD8544::drawChar(int col, const Fonts::Prop8::Font* font, uint8_t invert, char c)
 {
     while (font[1] && (font[0] > c || font[1] < c)) font += 4 + font[1] - font[0] + font[font[1] - font[0] + 3];

@@ -17,6 +17,7 @@ public:
     void setBias(int bias);
     void setTc(int tc);
     void clear();
+    void clearRows(int row, int count);
     int putch(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, char c);
     int print(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, const char* text);
     int printf(int row, int col, const Fonts::Prop8::Font* font, uint8_t invert, const char* format, ...);
