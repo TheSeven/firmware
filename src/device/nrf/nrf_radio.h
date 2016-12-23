@@ -11,6 +11,19 @@ namespace NRF
     class __attribute__((packed,aligned(4))) Radio : public SPI
     {
     public:
+        enum Role
+        {
+            Role_PTX = 0,
+            Role_PRX = 1,
+        };
+
+        enum CrcMode
+        {
+            CrcMode_None = 0,
+            CrcMode_8Bit = 2,
+            CrcMode_16Bit = 3,
+        };
+
         enum Register
         {
             Reg_Config = 0x00,
@@ -33,26 +46,22 @@ namespace NRF
 
         union __attribute__((packed)) Config
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
-                enum Role
-                {
-                    Role_PTX = 0,
-                    Role_PRX = 1,
-                } role : 1;
+                Role role : 1;
                 bool powerUp : 1;
-                enum CrcMode
-                {
-                    CrcMode_None = 0,
-                    CrcMode_8Bit = 2,
-                    CrcMode_16Bit = 3,
-                } crcMode : 2;
+                CrcMode crcMode : 2;
                 bool maskMaxRetrans : 1;
                 bool maskDataSent : 1;
                 bool maskDataReceived : 1;
                 uint8_t : 1;
             } b;
+            uint8_t d8;
+            constexpr Config() : b{Role_PTX, false, CrcMode_None, false, false, false} {}
+            constexpr Config(uint8_t d8) : d8{d8} {}
+            constexpr Config(Role role, bool powerUp, CrcMode crcMode,
+                             bool maskMaxRetrans, bool maskDataSent, bool maskDataReceived)
+                : b{role, powerUp, crcMode, maskMaxRetrans, maskDataSent, maskDataReceived} {}
         };
 
         Radio(const ::SPI::Bus* bus, GPIO::Pin cspin, int frequency)

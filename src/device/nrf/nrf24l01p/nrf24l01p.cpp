@@ -4,13 +4,10 @@
 #include "sys/util.h"
 
 
-void NRF_OPTIMIZE NRF::NRF24L01P::configure(Configuration* config)
+void NRF_OPTIMIZE NRF::NRF24L01P::configure(const Configuration* config)
 {
-    NRF::NRF24L01P::Config configOff = { 0 };
-    configOff.b.maskDataReceived = true;
-    configOff.b.maskDataSent = true;
-    configOff.b.maskMaxRetrans = true;
-    stayAwake(true);
+    NRF::NRF24L01P::Config configOff(Role_PTX, false, CrcMode_None, true, true, true);
+    bool old = stayAwake(true);
     writeReg(Reg_Config, &configOff, sizeof(configOff));
     configOff.d8 = config->config.d8;
     configOff.b.powerUp = false;
@@ -27,7 +24,7 @@ void NRF_OPTIMIZE NRF::NRF24L01P::configure(Configuration* config)
     writeReg(Reg_DynLengthCtl, &config->dynLengthCtl, sizeof(config->dynLengthCtl));
     writeReg(Reg_Config, &configOff, sizeof(configOff));
     writeReg(Reg_Config, &config->config, sizeof(config->config));
-    stayAwake(false);
+    stayAwake(old);
 }
 
 

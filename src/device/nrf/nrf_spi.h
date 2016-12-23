@@ -13,12 +13,27 @@
 namespace NRF
 {
 
-    class __attribute__((packed,aligned(4))) SPI : ::SPI::Device
+    class __attribute__((packed,aligned(4))) SPI : public ::SPI::Device
     {
     public:
+        enum Command
+        {
+            Cmd_ReadReg = 0x000,
+            Cmd_WriteReg = 0x120,
+            Cmd_Activate = 0x150,
+            Cmd_GetRxSize = 0x060,
+            Cmd_ReadPacket = 0x061,
+            Cmd_WritePacket = 0x1a0,
+            Cmd_WriteACKPayload = 0x1a8,
+            Cmd_WriteBroadcastPacket = 0x1b0,
+            Cmd_FlushTx = 0x0e1,
+            Cmd_FlushRx = 0x0e2,
+            Cmd_ReuseTx = 0x0e3,
+            Cmd_GetStatus = 0x0ff,
+        };
+
         union __attribute__((packed)) Status
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool txFull : 1;
@@ -28,6 +43,11 @@ namespace NRF
                 bool dataReceived : 1;
                 uint8_t regBank : 1;
             } b;
+            uint8_t d8;
+            constexpr Status() : b{0, 0, 0, 0, 0, 0} {}
+            constexpr Status(uint8_t byte) : d8{byte} {}
+            constexpr Status(bool maxRetrans, bool dataSent, bool dataReceived)
+                : b{0, 0, maxRetrans, dataSent, dataReceived, 0} {}
         };
 
         SPI(const ::SPI::Bus* bus, GPIO::Pin cspin, int frequency) : Device(bus, cspin, frequency) {}
@@ -45,8 +65,6 @@ namespace NRF
         Status writePacketNoAck(const void* data, int len);
         Status getStatus();
         Status activate(uint8_t feature);
-
-    protected:
         bool stayAwake(bool on);
     };
 

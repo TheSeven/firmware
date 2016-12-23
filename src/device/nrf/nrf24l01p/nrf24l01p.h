@@ -11,6 +11,28 @@ namespace NRF
     class __attribute__((packed,aligned(4))) NRF24L01P final : public Radio
     {
     public:
+        enum Width
+        {
+            Width_24Bit = 1,
+            Width_32Bit = 2,
+            Width_40Bit = 3,
+        };
+
+        enum Power
+        {
+            Power_m18dBm = 0,
+            Power_m12dBm = 1,
+            Power_m6dBm = 2,
+            Power_0dBm = 3,
+        };
+
+        enum DataRate
+        {
+            DataRate_1Mbit = 0,
+            DataRate_2Mbit = 1,
+            DataRate_250Kbit = 4,
+        };
+
         enum Register
         {
             Reg_Config = 0x00,
@@ -43,7 +65,6 @@ namespace NRF
 
         union __attribute__((packed)) AutoAckCtl
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool pipe0 : 1;
@@ -54,11 +75,15 @@ namespace NRF
                 bool pipe5 : 1;
                 uint8_t : 2;
             } b;
+            uint8_t d8;
+            constexpr AutoAckCtl() : d8(0) {}
+            constexpr AutoAckCtl(uint8_t d8) : d8(d8) {}
+            constexpr AutoAckCtl(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5)
+                : b{pipe0, pipe1, pipe2, pipe3, pipe4, pipe5} {}
         };
 
         union __attribute__((packed)) RxPipeEnable
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool pipe0 : 1;
@@ -69,90 +94,90 @@ namespace NRF
                 bool pipe5 : 1;
                 uint8_t : 2;
             } b;
+            uint8_t d8;
+            constexpr RxPipeEnable() : d8(0) {}
+            constexpr RxPipeEnable(uint8_t d8) : d8(d8) {}
+            constexpr RxPipeEnable(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5)
+                : b{pipe0, pipe1, pipe2, pipe3, pipe4, pipe5} {}
         };
 
         union __attribute__((packed)) AddressCtl
         {
-            uint8_t d8;
-            struct __attribute__((packed)) b
+            struct __attribute__((packed))
             {
-                enum Width
-                {
-                    Width_24Bit = 1,
-                    Width_32Bit = 2,
-                    Width_40Bit = 3,
-                } width : 2;
+                Width width : 2;
                 uint8_t : 6;
             } b;
+            uint8_t d8;
+            constexpr AddressCtl() : d8(0) {}
+            constexpr AddressCtl(uint8_t d8) : d8(d8) {}
+            constexpr AddressCtl(Width width) : b{width} {}
         };
 
         union __attribute__((packed)) RetransCtl
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 uint8_t count : 4;
                 uint8_t delay : 4;
             } b;
+            uint8_t d8;
+            constexpr RetransCtl() : d8(0) {}
+            constexpr RetransCtl(uint8_t d8) : d8(d8) {}
+            constexpr RetransCtl(uint8_t count, uint8_t delay) : b{count, delay} {}
         };
 
         union __attribute__((packed)) RfChannel
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 uint8_t channel : 7;
                 uint8_t : 1;
             } b;
+            uint8_t d8;
+            constexpr RfChannel() : d8(0) {}
+            constexpr RfChannel(uint8_t channel) : b{channel} {}
         };
 
         union __attribute__((packed)) RfSetup
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool lnaGain : 1;
-                enum Power
-                {
-                    Power_m18dBm = 0,
-                    Power_m12dBm = 1,
-                    Power_m6dBm = 2,
-                    Power_0dBm = 3,
-                } power : 2;
-                enum DataRate
-                {
-                    DataRate_1Mbit = 0,
-                    DataRate_2Mbit = 1,
-                    DataRate_250Kbit = 4,
-                } dataRate : 3;
+                Power power : 2;
+                DataRate dataRate : 3;
                 uint8_t : 1;
                 bool sendContinuousCarrier : 1;
             } b;
+            uint8_t d8;
+            constexpr RfSetup() : d8(0) {}
+            constexpr RfSetup(uint8_t d8) : d8(d8) {}
+            constexpr RfSetup(bool lnaGain, Power power, DataRate dataRate, bool sendContinuousCarrier)
+                : b{lnaGain, power, dataRate, sendContinuousCarrier} {}
         };
 
         union __attribute__((packed)) TxObserve
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 uint8_t retransCount : 4;
                 uint8_t lostPackets : 4;
             } b;
+            uint8_t d8;
         };
 
         union __attribute__((packed)) EnergyDetect
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool energy : 1;
-                uint8_t : 1;
+                uint8_t : 7;
             } b;
+            uint8_t d8;
         };
 
         union __attribute__((packed)) FifoStatus
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool rxEmpty : 1;
@@ -163,11 +188,13 @@ namespace NRF
                 bool txReuse : 1;
                 uint8_t : 1;
             } b;
+            uint8_t d8;
+            constexpr FifoStatus() : d8(0) {}
+            constexpr FifoStatus(uint8_t d8) : d8(d8) {}
         };
 
         union __attribute__((packed)) DynLengthCtl
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool pipe0 : 1;
@@ -178,11 +205,15 @@ namespace NRF
                 bool pipe5 : 1;
                 uint8_t : 2;
             } b;
+            uint8_t d8;
+            constexpr DynLengthCtl() : d8(0) {}
+            constexpr DynLengthCtl(uint8_t d8) : d8(d8) {}
+            constexpr DynLengthCtl(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5)
+                : b{pipe0, pipe1, pipe2, pipe3, pipe4, pipe5} {}
         };
 
         union __attribute__((packed)) FeatureCtl
         {
-            uint8_t d8;
             struct __attribute__((packed)) b
             {
                 bool dynAck : 1;
@@ -190,6 +221,10 @@ namespace NRF
                 bool dynLength : 1;
                 uint8_t : 5;
             } b;
+            uint8_t d8;
+            constexpr FeatureCtl() : d8(0) {}
+            constexpr FeatureCtl(uint8_t d8) : d8(d8) {}
+            constexpr FeatureCtl(bool dynAck, bool ackPayload, bool dynLength) : b{dynAck, ackPayload, dynLength} {}
         };
 
         struct __attribute__((packed)) Configuration
@@ -203,6 +238,13 @@ namespace NRF
             union RfSetup rfSetup;
             union DynLengthCtl dynLengthCtl;
             union FeatureCtl featureCtl;
+            constexpr Configuration() {}
+            constexpr Configuration(Config config, AutoAckCtl autoAckCtl, RxPipeEnable rxPipeEnable,
+                                    AddressCtl addressCtl, RetransCtl retransCtl, RfChannel rfChannel,
+                                    RfSetup rfSetup, DynLengthCtl dynLengthCtl, FeatureCtl featureCtl)
+                : config(config), autoAckCtl(autoAckCtl), rxPipeEnable(rxPipeEnable), addressCtl(addressCtl),
+                  retransCtl(retransCtl), rfChannel(rfChannel), rfSetup(rfSetup), dynLengthCtl(dynLengthCtl),
+                  featureCtl(featureCtl) {}
         };
 
         NRF24L01P(const ::SPI::Bus* bus, GPIO::Pin cspin, int frequency) : Radio(bus, cspin, frequency) {}
@@ -211,7 +253,7 @@ namespace NRF
                   void (*transmittedHandler)(bool success, int retransmissions))
             : Radio(bus, cspin, frequency, receivedHandler, transmittedHandler) {}
 
-        void configure(Configuration* config);
+        void configure(const Configuration* config);
         SPI::Status enablePipe(int pipe, bool on);
         SPI::Status handleIRQ();
     };
