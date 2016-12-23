@@ -8,7 +8,7 @@
 uint32_t crc32(const void* buf, uint32_t len)
 {
     uint32_t* data = (uint32_t*)buf;
-    bool old = clockgate_enable(STM32_CRC_CLOCKGATE, true);
+    clockgate_enable(STM32_CRC_CLOCKGATE, true);
     union STM32_CRC_REG_TYPE::CR CR = { 0 };
     CR.b.RESET = true;
     STM32_CRC_REGS.CR.d32 = CR.d32;
@@ -18,6 +18,6 @@ uint32_t crc32(const void* buf, uint32_t len)
         len -= 4;
     }
     uint32_t crc = STM32_CRC_REGS.DR;
-    clockgate_enable(STM32_CRC_CLOCKGATE, old);
+    clockgate_enable(STM32_CRC_CLOCKGATE, false);
     return crc;
 }

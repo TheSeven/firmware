@@ -523,22 +523,23 @@ int STM32_RCC_OPTIMIZE cortexm_get_systick_frequency()
     return STM32::RCC::getAHBClockFrequency() >> 3;
 }
 
-bool STM32_RCC_OPTIMIZE clockgate_enable(int gate, bool on)
+void STM32_RCC_OPTIMIZE clockgate_enable(int gate, bool on)
 {
-    volatile uint32_t* reg = &STM32_RCC_REGS.CLKGATES.d32[gate >> 5];
-    int bit = gate & 0x1f;
+    BB_PERIPH(STM32_RCC_REGS.CLKGATES, gate) = on;
+}
+
+bool STM32_RCC_OPTIMIZE clockgate_enable_getold(int gate, bool on)
+{
+    bool lockout = get_critsec_state();
     enter_critical_section();
-    uint32_t data = *reg;
-    bool old = (data >> bit) & 1;
-    data &= ~(1 << bit);
-    data |= on << bit;
-    *reg = data;
-    leave_critical_section();
+    bool old = BB_PERIPH(STM32_RCC_REGS.CLKGATES, gate);
+    BB_PERIPH(STM32_RCC_REGS.CLKGATES, gate) = on;
+    if (!lockout) leave_critical_section();
     return old;
 }
 
 bool STM32_RCC_OPTIMIZE resetline_assert(int line, bool on)
 {
-    return clockgate_enable(((((uintptr_t)&STM32_RCC_REGS.RSTLINES)
-                            - ((uintptr_t)&STM32_RCC_REGS.CLKGATES)) << 3) + line, on);
+    return clockgate_enable_getold(((((uintptr_t)&STM32_RCC_REGS.RSTLINES)
+                                 - ((uintptr_t)&STM32_RCC_REGS.CLKGATES)) << 3) + line, on);
 }

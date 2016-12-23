@@ -20,7 +20,7 @@ namespace STM32
 
         for (uint32_t i = 0; i < ARRAYLEN(gpiotable); i++)
         {
-            bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(i), true);
+            clockgate_enable(STM32_GPIO_CLOCKGATE(i), true);
             STM32_GPIO_REGS(i).AFR.d32[0] = gpiotable[i][6];
             STM32_GPIO_REGS(i).AFR.d32[1] = gpiotable[i][5];
             STM32_GPIO_REGS(i).BSRR.d32 = gpiotable[i][4];
@@ -28,7 +28,7 @@ namespace STM32
             STM32_GPIO_REGS(i).OSPEEDR.d32 = gpiotable[i][2];
             STM32_GPIO_REGS(i).OTYPER.d32 = gpiotable[i][1];
             STM32_GPIO_REGS(i).MODER.d32 = gpiotable[i][0];
-            clockgate_enable(STM32_GPIO_CLOCKGATE(i), old);
+            clockgate_enable(STM32_GPIO_CLOCKGATE(i), false);
         }
     }
 
@@ -40,14 +40,14 @@ namespace STM32
         reg += port << 8;
         uint32_t mask = 0xffffffff >> (32 - width);
         uint32_t shift = width * pin;
-        bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(port), true);
+        bool old = clockgate_enable_getold(STM32_GPIO_CLOCKGATE(port), true);
         *reg = (*reg & ~(mask << shift)) | (value << shift);
         clockgate_enable(STM32_GPIO_CLOCKGATE(port), old);
     }
 
     bool STM32_GPIO_OPTIMIZE GPIO::PinController::getLevel(unsigned int pin) const
     {
-        bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), true);
+        bool old = clockgate_enable_getold(STM32_GPIO_CLOCKGATE(pin >> 4), true);
         bool result = (STM32_GPIO_REGS(pin >> 4).IDR.d32 >> (pin & 0xf)) & 1;
         clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), old);
         return result;
@@ -55,7 +55,7 @@ namespace STM32
     
     void STM32_GPIO_OPTIMIZE GPIO::PinController::setLevel(unsigned int pin, bool level) const
     {
-        bool old = clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), true);
+        bool old = clockgate_enable_getold(STM32_GPIO_CLOCKGATE(pin >> 4), true);
         STM32_GPIO_REGS(pin >> 4).BSRR.d32 = (0x10000 | !!level) << (pin & 0xf);
         clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), old);
     }
@@ -93,7 +93,7 @@ namespace STM32
 #ifdef GPIO_SUPPORT_FAST_MODE
     bool STM32_GPIO_OPTIMIZE GPIO::PinController::enableFast(unsigned int pin, bool on) const
     {
-        return clockgate_enable(STM32_GPIO_CLOCKGATE(pin >> 4), on);
+        return clockgate_enable_getold(STM32_GPIO_CLOCKGATE(pin >> 4), on);
     }
 
     bool STM32_GPIO_OPTIMIZE GPIO::PinController::getLevelFast(unsigned int pin) const

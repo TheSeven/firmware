@@ -7,7 +7,8 @@
 extern "C"
 {
 #endif
-    bool clockgate_enable(int gate, bool on);
+    void clockgate_enable(int gate, bool on);
+    bool clockgate_enable_getold(int gate, bool on);
 #ifdef __cplusplus
 }
 #endif

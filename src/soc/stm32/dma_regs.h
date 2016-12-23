@@ -4,7 +4,7 @@ struct __attribute__((packed)) STM32_DMA_REG_TYPE
 {
     union ISR
     {
-        uint32_t d32[2];
+        uint16_t d32XXX[2];
         struct __attribute__((packed)) b
         {
             uint32_t FEIF0 : 1;

@@ -11,7 +11,7 @@ namespace STM32
     void PWR::init()
     {
         // Set up some sane defaults
-        bool old = clockgate_enable(STM32_PWR_CLOCKGATE, true);
+        clockgate_enable(STM32_PWR_CLOCKGATE, true);
         union STM32_PWR_REG_TYPE::CR CR = { 0 };
         CR.b.LPDS = true;
 #if !defined(SOC_STM32F0) && !defined(SOC_STM32F1)
@@ -41,7 +41,7 @@ namespace STM32
         while (!STM32_PWR_REGS.CSR.b.ODRDY);
         STM32_PWR_REGS.CR.b.ODSW = true;
 #endif
-        clockgate_enable(STM32_PWR_CLOCKGATE, old);
+        clockgate_enable(STM32_PWR_CLOCKGATE, false);
     }
 
 }
