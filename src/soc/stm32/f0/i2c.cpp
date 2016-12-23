@@ -5,7 +5,9 @@
 #include "cpu/arm/cortexm/irq.h"
 #include "cpu/arm/cortexm/cmsis.h"
 #include "interface/clockgate/clockgate.h"
+#include "interface/resetline/resetline.h"
 #include "sys/util.h"
+#include "sys/time.h"
 
 
 namespace STM32
@@ -14,6 +16,12 @@ namespace STM32
     {
         i2c1_IRQn,
         i2c2_IRQn,
+    };
+
+    uint8_t const i2c_resetline[] =
+    {
+        STM32_I2C1_RESETLINE,
+        STM32_I2C2_RESETLINE,
     };
 
     void I2C::setTiming(Timing timing)
@@ -27,11 +35,19 @@ namespace STM32
         initialized = true;
     }
 
+    void I2C::setTimeout(Timeout timeout)
+    {
+        volatile STM32_I2C_REG_TYPE* regs = &STM32_I2C_REGS(index);
+        clockgate_enable(STM32_I2C_CLOCKGATE(index), true);
+        regs->TIMEOUTR.d32 = timeout.d32;
+        clockgate_enable(STM32_I2C_CLOCKGATE(index), false);
+    }
+
     enum ::I2C::Result I2C::txn(const ::I2C::Transaction* txn)
     {
         volatile STM32_I2C_REG_TYPE* regs = &STM32_I2C_REGS(index);
         if (!initialized) setTiming(Timing(0, 0, 0, 0, 0));
-        error = false;
+        error = ::I2C::RESULT_OK;
         curTxn = txn;
         xfer = 0xff;
         busy = true;
@@ -44,13 +60,18 @@ namespace STM32
         CR1.b.ERRIE = true;
         CR1.b.PE = true;
         regs->CR1.d32 = CR1.d32;
-        CR1.d32 = 0;
-        CR1.b.PE = false;
-        regs->CR2.d32 = CR1.d32;
         start();
-        while (busy) idle();
+        int timeout = TIMEOUT_SETUP(100 * (txn->timeout ? txn->timeout : 100000));
+        while (busy && !TIMEOUT_EXPIRED(timeout)) idle();
         clockgate_enable(STM32_I2C_CLOCKGATE(index), false);
-        return error ? ::I2C::RESULT_NAK : ::I2C::RESULT_OK;
+        if (busy)
+        {
+            if (error == ::I2C::RESULT_OK) error = ::I2C::RESULT_TIMEOUT;
+            resetline_assert(i2c_resetline[index], true);
+            udelay(1);
+            resetline_assert(i2c_resetline[index], false);
+        }
+        return error;
     }
 
     void I2C::advance()
@@ -107,11 +128,31 @@ namespace STM32
         regs->CR2.d32 = CR2.d32;
     }
 
-    void __attribute__((optimize("-O0"))) I2C::irqHandler()
+    void I2C::irqHandler()
     {
         volatile STM32_I2C_REG_TYPE* regs = &STM32_I2C_REGS(index);
         union STM32_I2C_REG_TYPE::ISR ISR = { regs->ISR.d32 };
-        if (ISR.b.RXNE)
+        if (ISR.b.NAKF)
+            error = ::I2C::RESULT_NAK;
+        else if (ISR.b.TIMEOUT)
+            error = ::I2C::RESULT_TIMEOUT;
+        else if (ISR.b.ARLO)
+        {
+            error = ::I2C::RESULT_COLLISION;
+            regs->CR1.d32 = 0;
+        }
+        else if (ISR.b.BERR)
+            error = ::I2C::RESULT_UNKNOWN_ERROR;
+        else if (ISR.b.OVR || ISR.b.PECERR)
+        {
+            error = ::I2C::RESULT_UNKNOWN_ERROR;
+            union STM32_I2C_REG_TYPE::CR2 CR2 = { 0 };
+            CR2.b.STOP = true;
+            regs->CR2.d32 = CR2.d32;
+        }
+        else if (ISR.b.STOPF && (totallen || !last) && error == ::I2C::RESULT_OK)
+            error = ::I2C::RESULT_UNKNOWN_ERROR;
+        else if (ISR.b.RXNE)
         {
             advanceIfNecessary();
             *buf++ = regs->RXDR;
@@ -141,15 +182,6 @@ namespace STM32
                 CR2.b.STOP = true;
                 regs->CR2.d32 = CR2.d32;
             }
-        }
-        else if (ISR.b.BERR || ISR.b.ARLO || ISR.b.TIMEOUT)
-            error = true;
-        else if (ISR.b.OVR || ISR.b.PECERR || (ISR.b.STOPF && (totallen || !last)))
-        {
-            error = true;
-            union STM32_I2C_REG_TYPE::CR2 CR2 = { 0 };
-            CR2.b.STOP = true;
-            regs->CR2.d32 = CR2.d32;
         }
         regs->ICR.d32 = ISR.d32;
         if (!regs->ISR.b.BUSY)
