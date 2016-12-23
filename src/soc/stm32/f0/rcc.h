@@ -39,6 +39,7 @@ namespace STM32
         };
         
         static void init();
+        static void initClocks();
         static bool setClockGate(int gate, bool on);
         static int getSysClockFrequency();
         static int getAHBClockFrequency();

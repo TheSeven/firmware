@@ -163,11 +163,16 @@ namespace STM32
         STM32_RCC_REGS.CLKGATES.r.APB2ENR.d32 = APB2ENR.d32;
         union STM32_RCC_REG_TYPE::CLKGATES::REG::APB1ENR APB1ENR = { 0 };
         STM32_RCC_REGS.CLKGATES.r.APB1ENR.d32 = APB1ENR.d32;
-        union STM32_RCC_REG_TYPE::CFGR CFGR = { 0 };
 
         // Start up HSI
         STM32_RCC_REGS.CR.b.HSION = true;
         
+        // Configure system clock sources as requested by the configuration
+        initClocks();
+    }
+
+    void STM32_RCC_OPTIMIZE RCC::initClocks()
+    {
         // Shut down HSI14 and HSI48 (or start the latter if we want to use it as our clock source)
         union STM32_RCC_REG_TYPE::CR2 CR2 = { STM32_RCC_REGS.CR2.d32 };
         CR2.b.HSI14ON = false;
@@ -179,6 +184,7 @@ namespace STM32
         STM32_RCC_REGS.CR2.d32 = CR2.d32;
 
         // Switch to HSI so that we can shutdown and reconfigure everything else
+        union STM32_RCC_REG_TYPE::CFGR CFGR = { 0 };
         CFGR.b.SW = CFGR.b.SW_HSI;
         STM32_RCC_REGS.CFGR.d32 = CFGR.d32;
         while (STM32_RCC_REGS.CFGR.b.SWS != CFGR.b.SWS_HSI);
@@ -200,7 +206,7 @@ namespace STM32
 
         // Configure HSE input divider
         union STM32_RCC_REG_TYPE::CFGR2 CFGR2 = { 0 };
-        CFGR.b.PREDIV = STM32_PLLIN_DIVIDER - 1;
+        CFGR2.b.PREDIV = STM32_PLLIN_DIVIDER - 1;
         STM32_RCC_REGS.CFGR2.d32 = CFGR2.d32;
 #endif
 
@@ -382,7 +388,20 @@ int STM32_RCC_OPTIMIZE cortexm_get_systick_frequency()
     return STM32::RCC::getAHBClockFrequency() >> 3;
 }
 
-bool STM32_RCC_OPTIMIZE clockgate_enable(int gate, bool on)
+void STM32_RCC_OPTIMIZE clockgate_enable(int gate, bool on)
+{
+    volatile uint32_t* reg = &STM32_RCC_REGS.CLKGATES.d32[gate >> 5];
+    int bit = gate & 0x1f;
+    bool lockout = get_critsec_state();
+    enter_critical_section();
+    uint32_t data = *reg;
+    data &= ~(1 << bit);
+    data |= on << bit;
+    *reg = data;
+    if (!lockout) leave_critical_section();
+}
+
+bool STM32_RCC_OPTIMIZE clockgate_enable_getold(int gate, bool on)
 {
     volatile uint32_t* reg = &STM32_RCC_REGS.CLKGATES.d32[gate >> 5];
     int bit = gate & 0x1f;
@@ -399,6 +418,6 @@ bool STM32_RCC_OPTIMIZE clockgate_enable(int gate, bool on)
 
 bool STM32_RCC_OPTIMIZE resetline_assert(int line, bool on)
 {
-    return clockgate_enable(((((uintptr_t)&STM32_RCC_REGS.RSTLINES)
-                            - ((uintptr_t)&STM32_RCC_REGS.CLKGATES)) << 3) + line, on);
+    return clockgate_enable_getold(((((uintptr_t)&STM32_RCC_REGS.RSTLINES)
+                                 - ((uintptr_t)&STM32_RCC_REGS.CLKGATES)) << 3) + line, on);
 }
