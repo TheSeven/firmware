@@ -148,9 +148,9 @@ namespace STM32
     void STM32_RCC_OPTIMIZE RCC::init()
     {
         // Reset all peripherals
-        STM32_RCC_REGS.RSTLINES.r.APB2RSTR.d32 = 0xffffffff;
-        STM32_RCC_REGS.RSTLINES.r.APB2RSTR.d32 = 0;
+        STM32_RCC_REGS.RSTLINES.r.APB2RSTR.d32 = 0xffbfffff;
         STM32_RCC_REGS.RSTLINES.r.APB1RSTR.d32 = 0xffffffff;
+        STM32_RCC_REGS.RSTLINES.r.APB2RSTR.d32 = 0;
         STM32_RCC_REGS.RSTLINES.r.APB1RSTR.d32 = 0;
         
         // Disable all RCC interrupts
