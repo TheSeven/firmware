@@ -1,5 +1,10 @@
+#include "global.h"
+
 util_asm.S
 cortexutil.cpp
-time.cpp
 irq.cpp
 vectors.c
+
+#ifndef CORTEXM_DISABLE_SYSTICK
+time.cpp
+#endif
