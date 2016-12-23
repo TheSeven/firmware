@@ -6,7 +6,14 @@
 
 void CORTEXUTIL_OPTIMIZE idle()
 {
+#ifndef CORTEXUTIL_DISABLE_IDLE
     __asm__ volatile("wfi");
+#endif
+}
+
+void CORTEXUTIL_OPTIMIZE breakpoint()
+{
+    __asm__ volatile("bkpt #0xff");
 }
 
 void CORTEXUTIL_OPTIMIZE reset()
