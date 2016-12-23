@@ -38,6 +38,11 @@ public:
 #ifdef GPIO_DYNAMIC_CONTROLLERS
         unsigned int controller : 8;
 #endif
+        constexpr Pin() : pin(0)
+#ifdef GPIO_DYNAMIC_CONTROLLERS
+            , controller(0)
+#endif
+        {}
         constexpr Pin(unsigned int controller, unsigned int pin) : pin(pin)
 #ifdef GPIO_DYNAMIC_CONTROLLERS
             , controller(controller)
