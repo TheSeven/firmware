@@ -50,18 +50,17 @@ void initRadio()
         address[0] = 0xf0 + i;
         radio.setRxAddress(i, address, sizeof(address));
     }
-    NRF::NRF24L01P::Configuration nrfConfig = { 0 };
-    nrfConfig.config.b.powerUp = true;
-    nrfConfig.config.b.role = nrfConfig.config.b.Role_PRX;
-    nrfConfig.config.b.crcMode = nrfConfig.config.b.CrcMode_16Bit;
-    nrfConfig.addressCtl.b.width = nrfConfig.addressCtl.b.Width_24Bit;
-    nrfConfig.retransCtl.b.count = 0;
-    nrfConfig.retransCtl.b.delay = 5;
-    nrfConfig.rfChannel.b.channel = 82;
-    nrfConfig.rfSetup.b.power = nrfConfig.rfSetup.b.Power_0dBm;
-    nrfConfig.rfSetup.b.dataRate = nrfConfig.rfSetup.b.DataRate_1Mbit;
-    nrfConfig.featureCtl.b.ackPayload = true;
-    nrfConfig.featureCtl.b.dynLength = true;
+    NRF::NRF24L01P::Configuration nrfConfig(
+        NRF::Radio::Config(NRF::Radio::Role_PRX, true, NRF::Radio::CrcMode_16Bit, false, false, false),
+        NRF::NRF24L01P::AutoAckCtl(false, false, false, false, false, false),
+        NRF::NRF24L01P::RxPipeEnable(false, false, false, false, false, false),
+        NRF::NRF24L01P::AddressCtl(NRF::NRF24L01P::Width_24Bit),
+        NRF::NRF24L01P::RetransCtl(0, 5),
+        NRF::NRF24L01P::RfChannel(82),
+        NRF::NRF24L01P::RfSetup(false, NRF::NRF24L01P::Power_0dBm, NRF::NRF24L01P::DataRate_1Mbit, false),
+        NRF::NRF24L01P::DynLengthCtl(false, false, false, false, false, false),
+        NRF::NRF24L01P::FeatureCtl(false, true, true)
+    );
     radio.configure(&nrfConfig);
 }
 
