@@ -15,6 +15,7 @@ struct __attribute__((packed)) STM32_IWDG_REG_TYPE
             uint32_t : 30;
         } b;
     } SR;
+    uint32_t WINR;
 };
 
 #define STM32_IWDG_REGS (*((volatile STM32_IWDG_REG_TYPE*)0x40003000))
