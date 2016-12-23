@@ -19,8 +19,10 @@ namespace STM32
     volatile STM32_SPI_REG_TYPE* const spi_regs[] =
     {
         &STM32_SPI1_REGS,
-#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
+#if defined(SOC_STM32F072) || defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
         &STM32_SPI2_REGS,
+#endif
+#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
         &STM32_SPI3_REGS,
 #endif
 #ifdef SOC_STM32F42X
@@ -33,8 +35,10 @@ namespace STM32
     uint8_t const spi_clocks[] =
     {
         STM32_SPI1_CLOCKGATE,
-#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
+#if defined(SOC_STM32F072) || defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
         STM32_SPI2_CLOCKGATE,
+#endif
+#if defined(SOC_STM32F1) || defined(SOC_STM32F2) || defined(SOC_STM32F4)
         STM32_SPI3_CLOCKGATE,
 #endif
 #ifdef SOC_STM32F42X
@@ -59,6 +63,8 @@ namespace STM32
         regs->I2SCFGR.d32 = 0;
         union STM32_SPI_REG_TYPE::CR2 CR2 = { 0 };
         CR2.b.FRXTH = true;
+        CR2.b.TXDMAEN = true;
+        CR2.b.RXDMAEN = true;
         regs->CR2.d32 = CR2.d32;
         CR1.b.SSM = true;
         CR1.b.SSI = true;
