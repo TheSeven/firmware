@@ -9,6 +9,10 @@ syscfg.cpp
 gpio.cpp
 #endif
 
+#ifdef STM32_ENABLE_EXTI
+exti.cpp
+#endif
+
 #ifdef STM32_ENABLE_SPI
 spi.cpp
 #endif
