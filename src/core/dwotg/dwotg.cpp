@@ -290,7 +290,7 @@ void DWOTG::ep0Init()
     regs->inep_regs[0].diepctl.d32 = depctl.d32;
 }
 
-void DWOTG::handleIrq()
+void DWOTG::handleIrqInternal()
 {
     DWOTGRegs::gintsts gintsts = { regs->gregs.gintsts.d32 };
 

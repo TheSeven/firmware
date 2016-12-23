@@ -58,7 +58,7 @@ namespace STM32
         constexpr USB(const ::USB::Descriptor::DeviceDescriptor* deviceDescriptor,
                       const ::USB::Descriptor::StringDescriptor* const* stringDescriptors,
                       uint8_t stringDescriptorCount, ::USB::Configuration* const* configurations,
-                      uint8_t configurationCount, UsbCore core, uint16_t* fifoSizeList, unsigned int fifoCount)
+                      uint8_t configurationCount, UsbCore core, const uint16_t* fifoSizeList, unsigned int fifoCount)
             : DWOTG(deviceDescriptor, stringDescriptors, stringDescriptorCount, configurations, configurationCount,
                     coreParams[core].regs, coreParams[core].phy16bit, coreParams[core].phyUlpi, coreParams[core].useDma,
                     coreParams[core].sharedTxFifo, false, fifoCount, coreParams[core].totalFifoSize, fifoSizeList),

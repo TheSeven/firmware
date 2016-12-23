@@ -6,6 +6,7 @@
 #include "sys/util.h"
 
 
+constexpr struct STM32::USB::CoreParams STM32::USB::coreParams[];
 constexpr STM32::USB::CoreRuntimeParams STM32::USB::coreRuntimeParams[];
 STM32::USB* STM32::USB::activeInstance[STM32::USB_CORE_COUNT];
 
@@ -38,7 +39,7 @@ void STM32::USB::socClearIrq()
 
 void STM32::USB::handleIrq(UsbCore core)
 {
-    if (activeInstance[core]) activeInstance[core]->handleIrq();
+    if (activeInstance[core]) activeInstance[core]->handleIrqInternal();
     else irq_enable(STM32::USB::coreRuntimeParams[core].irq, false);
 }
 

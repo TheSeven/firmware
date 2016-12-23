@@ -17,7 +17,7 @@ protected:
     uint32_t : 3;
     uint8_t fifoCount;
     uint16_t totalFifoSize;
-    uint16_t* fifoSizeList;
+    const uint16_t* fifoSizeList;
     Buffer buffer;
     struct __attribute__((packed,aligned(4))) EndpointDataPtr
     {
@@ -49,7 +49,7 @@ private:
     void tryPush(int ep);
     void ep0Init();
 public:
-    void handleIrq();
+    void handleIrqInternal();
     constexpr DWOTG(const ::USB::Descriptor::DeviceDescriptor* deviceDescriptor,
                     const ::USB::Descriptor::StringDescriptor* const* stringDescriptors, uint8_t stringDescriptorCount,
                     ::USB::Configuration* const* configurations, uint8_t configurationCount,
