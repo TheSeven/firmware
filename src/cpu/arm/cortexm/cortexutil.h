@@ -6,6 +6,11 @@
 #define CORTEXUTIL_OPTIMIZE __attribute__((optimize("-Os")))
 #endif
 
+#if defined(CPU_ARM_CORTEX_M3) || defined(CPU_ARM_CORTEX_M4)
+#define BB_SRAM(addr, bit) (*(uint32_t*)(0x22000000 + ((((uintptr_t)&(addr)) - 0x20000000) * 32) + (bit) * 4))
+#define BB_PERIPH(addr, bit) (*(uint32_t*)(0x42000000 + ((((uintptr_t)&(addr)) - 0x40000000) * 32) + (bit) * 4))
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
