@@ -1,7 +1,7 @@
 #pragma once
 
 #define BOARD_FLEXPERIMENT_MINI
-#define SOC_STM32F2XXXC
+#define SOC_STM32F2XXXB
 #ifndef STM32_VOLTAGE
 #define STM32_VOLTAGE 3300
 #endif
