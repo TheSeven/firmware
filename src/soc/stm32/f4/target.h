@@ -31,6 +31,7 @@
 #else
 #define DFU_RAM_SIZE 8K
 #endif
+#define STM32_CPUID_ADDR 0x1fff7a10
 #include "soc/stm32/f2/clockgates.h"
 #include "soc/stm32/f2/resetlines.h"
 #define STM32_GPIO_DEF_FILE "soc/stm32/f2/gpio_defs.h"

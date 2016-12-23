@@ -32,6 +32,10 @@
 #define STACK_SIZE 0x1000
 #endif
 
+#ifdef STM32_CPUID_ADDR
+_ZN5STM325CPUIDE = STM32_CPUID_ADDR;
+#endif
+
 _stack_size = STACK_SIZE;
 
 ENTRY(_irqvectors)

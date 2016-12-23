@@ -16,6 +16,7 @@
 #error Unknown STM32F030 variant!
 #endif
 #elif defined(SOC_STM32F072)
+#define STM32_CPUID_ADDR 0x1ffff7ac
 #define FLASH_PAGESIZE 2048
 #if defined(SOC_STM32F0XXX8)
 #ifdef STM32_USE_INOFFICIAL

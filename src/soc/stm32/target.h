@@ -56,6 +56,7 @@
 #ifdef __cplusplus
 namespace STM32
 {
+    extern const uint32_t CPUID[3];
 }
 #endif
 
