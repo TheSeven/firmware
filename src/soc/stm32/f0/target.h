@@ -15,6 +15,22 @@
 #else
 #error Unknown STM32F030 variant!
 #endif
+#elif defined(SOC_STM32F042)
+#define STM32_CPUID_ADDR 0x1ffff7ac
+#define FLASH_PAGESIZE 1024
+#if defined(SOC_STM32F0XXX4)
+#ifdef STM32_USE_INOFFICIAL
+#define FLASH_SIZE 32768
+#else
+#define FLASH_SIZE 16384
+#endif
+#define SRAM_SIZE 4096
+#elif defined(SOC_STM32F0XXX6)
+#define FLASH_SIZE 32768
+#define SRAM_SIZE 4096
+#else
+#error Unknown STM32F042 variant!
+#endif
 #elif defined(SOC_STM32F072)
 #define STM32_CPUID_ADDR 0x1ffff7ac
 #define FLASH_PAGESIZE 2048
