@@ -636,7 +636,7 @@ class __attribute__((aligned(4))) CDCConfiguration : public USB::Configuration
         USB::Descriptor::ConfigurationDescriptor(sizeof(struct _config_descriptor), InterfaceCount, 1, 0,
                                                  USB::Descriptor::ConfigAttributes(true, true, false), 100),
         USB::CDC::Descriptor::InterfaceAssociation(ControlInterface, 2, USB::Descriptor::Class(0x02, 0x02, 0x01), 0),
-        USB::Descriptor::InterfaceDescriptor(0, 0, ARRAYLEN(_config_descriptor::i0_a0_eps),
+        USB::Descriptor::InterfaceDescriptor(ControlInterface, 0, ARRAYLEN(_config_descriptor::i0_a0_eps),
                                              USB::Descriptor::Class(0x02, 0x02, 0x01), 0),
         USB::CDC::Descriptor::Header(0x0110),
         USB::CDC::Descriptor::CallManagement(0x01, BulkInterface),
