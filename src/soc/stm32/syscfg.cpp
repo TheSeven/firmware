@@ -10,12 +10,11 @@ namespace STM32
 
     void SYSCFG::init()
     {
-        // Configure number of waitstates correctly
-        bool old = clockgate_enable(STM32_SYSCFG_CLOCKGATE, true);
-        union STM32_SYSCFG_REG_TYPE::MEMRMP MEMRMP = { 0 };
-        MEMRMP.b.MEM_MODE = 0;
-        STM32_SYSCFG_REGS.MEMRMP.d32 = MEMRMP.d32;
-        clockgate_enable(STM32_SYSCFG_CLOCKGATE, old);
+        clockgate_enable(STM32_SYSCFG_CLOCKGATE, true);
+        union STM32_SYSCFG_REG_TYPE::CFGR1 CFGR1 = { 0 };
+        CFGR1.b.MEM_MODE = 0;
+        STM32_SYSCFG_REGS.CFGR1.d32 = CFGR1.d32;
+        clockgate_enable(STM32_SYSCFG_CLOCKGATE, false);
     }
 
 #ifdef STM32_ENABLE_ETHERNET
