@@ -56,13 +56,14 @@ namespace STM32
     public:
         static void handleIrq(UsbCore core);
         constexpr USB(const ::USB::Descriptor::DeviceDescriptor* deviceDescriptor,
+                      const ::USB::Descriptor::BOSDescriptor* bosDescriptor,
                       const ::USB::Descriptor::StringDescriptor* const* stringDescriptors,
                       uint8_t stringDescriptorCount, ::USB::Configuration* const* configurations,
                       uint8_t configurationCount, UsbCore core, const uint16_t* fifoSizeList, unsigned int fifoCount)
-            : DWOTG(deviceDescriptor, stringDescriptors, stringDescriptorCount, configurations, configurationCount,
-                    coreParams[core].regs, coreParams[core].phy16bit, coreParams[core].phyUlpi, coreParams[core].useDma,
-                    coreParams[core].sharedTxFifo, false, fifoCount, coreParams[core].totalFifoSize, fifoSizeList),
-                    core(core) {}
+            : DWOTG(deviceDescriptor, bosDescriptor, stringDescriptors, stringDescriptorCount, configurations,
+                    configurationCount, coreParams[core].regs, coreParams[core].phy16bit, coreParams[core].phyUlpi,
+                    coreParams[core].useDma, coreParams[core].sharedTxFifo, false, fifoCount,
+                    coreParams[core].totalFifoSize, fifoSizeList), core(core) {}
     };
 
 }
